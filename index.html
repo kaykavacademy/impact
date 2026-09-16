@@ -1,0 +1,1650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KayKav Builder Impact</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#14202F; --ink2:#42536A; --ink3:#6E7F94;
+  --paper:#EDF0F4; --surface:#FFFFFF; --surface2:#F7F9FB;
+  --rule:#D5DCE5; --rule2:#E6EBF1;
+  --blue:#295898; --blue-ink:#1D4275; --blue-tint:#E6EDF6;
+  --gold:#B18C54; --gold-tint:#F4ECDE;
+  --c0:#93A1B1; --c1:#7E9CC6; --c2:#295898; --c3:#B18C54;
+  --c0-tint:#EAEDF1; --c1-tint:#E6EDF6; --c2-tint:#DCE6F3; --c3-tint:#F4ECDE;
+  --shadow:0 1px 2px rgba(20,32,47,.06), 0 8px 24px -16px rgba(20,32,47,.28);
+  --sans:'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --serif:'Fraunces', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#E7EDF4; --ink2:#A9B8CA; --ink3:#7F90A5;
+    --paper:#0E151E; --surface:#161F2B; --surface2:#1B2633;
+    --rule:#2B3747; --rule2:#232E3C;
+    --blue:#7BA5DC; --blue-ink:#A6C4EB; --blue-tint:#1B2B3F;
+    --gold:#D3AF7B; --gold-tint:#2B2318;
+    --c0:#7C8B9C; --c1:#6E92C4; --c2:#7BA5DC; --c3:#D3AF7B;
+    --c0-tint:#212B37; --c1-tint:#1B2B3F; --c2-tint:#1B2B3F; --c3-tint:#2B2318;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -18px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#E7EDF4; --ink2:#A9B8CA; --ink3:#7F90A5;
+  --paper:#0E151E; --surface:#161F2B; --surface2:#1B2633;
+  --rule:#2B3747; --rule2:#232E3C;
+  --blue:#7BA5DC; --blue-ink:#A6C4EB; --blue-tint:#1B2B3F;
+  --gold:#D3AF7B; --gold-tint:#2B2318;
+  --c0:#7C8B9C; --c1:#6E92C4; --c2:#7BA5DC; --c3:#D3AF7B;
+  --c0-tint:#212B37; --c1-tint:#1B2B3F; --c2-tint:#1B2B3F; --c3-tint:#2B2318;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -18px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:var(--sans); font-size:15px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+a{color:var(--blue-ink)}
+:focus-visible{outline:2px solid var(--blue); outline-offset:2px; border-radius:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- shell ---------- */
+.kk-top{
+  position:sticky; top:0; z-index:40;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+  padding:10px 20px; background:var(--surface);
+  border-bottom:1px solid var(--rule);
+}
+.kk-wordmark{display:flex;align-items:baseline;gap:9px;margin-right:auto}
+.kk-wordmark b{font-family:var(--serif);font-weight:500;font-size:19px;letter-spacing:-.015em}
+.kk-wordmark span{font-size:12.5px;color:var(--ink3)}
+.kk-demo{
+  font-size:11.5px; color:var(--gold); border:1px dashed var(--gold);
+  padding:2px 8px; border-radius:999px; background:var(--gold-tint); white-space:nowrap;
+}
+.kk-modes{display:flex;gap:2px;background:var(--surface2);border:1px solid var(--rule);border-radius:999px;padding:3px}
+.kk-modes button{padding:5px 13px;border-radius:999px;font-size:13px;color:var(--ink2)}
+.kk-modes button[aria-pressed="true"]{background:var(--blue);color:#fff;font-weight:500}
+.kk-theme{width:32px;height:32px;border:1px solid var(--rule);border-radius:8px;display:grid;place-items:center;color:var(--ink3)}
+
+.kk-body{display:flex;min-height:calc(100vh - 53px);align-items:stretch}
+.kk-rail{
+  flex:0 0 218px; background:var(--surface); border-right:1px solid var(--rule);
+  padding:18px 12px 40px; position:sticky; top:53px; height:calc(100vh - 53px); overflow-y:auto;
+}
+.kk-rail h6{margin:16px 8px 6px;font-size:11.5px;font-weight:500;color:var(--ink3);letter-spacing:.01em}
+.kk-rail h6:first-child{margin-top:0}
+.kk-navitem{
+  display:flex;align-items:center;gap:9px;width:100%;text-align:left;
+  padding:7px 9px;border-radius:7px;font-size:14px;color:var(--ink2);
+}
+.kk-navitem:hover{background:var(--surface2)}
+.kk-navitem[aria-current="page"]{background:var(--blue-tint);color:var(--blue-ink);font-weight:500}
+.kk-navitem .kk-count{margin-left:auto;font-size:11.5px;font-variant-numeric:tabular-nums;
+  background:var(--gold);color:#fff;border-radius:999px;padding:1px 7px;font-weight:500}
+.kk-main{flex:1;min-width:0;padding:30px 34px 90px;max-width:1180px}
+
+@media (max-width:860px){
+  .kk-body{display:block}
+  .kk-rail{position:static;height:auto;width:100%;flex:none;display:flex;gap:6px;overflow-x:auto;
+    padding:10px 14px;border-right:none;border-bottom:1px solid var(--rule)}
+  .kk-rail h6{display:none}
+  .kk-navitem{width:auto;white-space:nowrap;padding:6px 11px}
+  .kk-main{padding:22px 16px 80px}
+  .kk-wordmark span{display:none}
+}
+
+/* ---------- headings ---------- */
+.kk-h1{font-family:var(--serif);font-weight:400;font-size:clamp(26px,3.4vw,34px);line-height:1.15;
+  letter-spacing:-.018em;margin:0 0 6px}
+.kk-lede{color:var(--ink2);margin:0 0 26px;max-width:62ch;font-size:15px}
+.kk-h2{font-family:var(--serif);font-weight:500;font-size:19px;letter-spacing:-.01em;margin:0 0 3px}
+.kk-sub{color:var(--ink3);font-size:13px;margin:0 0 14px;max-width:70ch}
+.kk-section{margin:38px 0 0}
+.kk-section:first-of-type{margin-top:0}
+
+/* ---------- surfaces ---------- */
+.kk-panel{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:20px 22px}
+.kk-panel + .kk-panel{margin-top:14px}
+.kk-grid{display:grid;gap:14px}
+.kk-grid.two{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.kk-grid.three{grid-template-columns:repeat(auto-fit,minmax(215px,1fr))}
+
+/* ---------- confidence meter ---------- */
+.kk-conf{display:inline-flex;align-items:center;gap:6px;vertical-align:middle}
+.kk-conf-bars{display:inline-flex;gap:2px}
+.kk-conf-bars i{width:5px;height:11px;border-radius:1.5px;background:var(--rule);display:block}
+.kk-conf[data-c="0"] i.on{background:var(--c0)}
+.kk-conf[data-c="1"] i.on{background:var(--c1)}
+.kk-conf[data-c="2"] i.on{background:var(--c2)}
+.kk-conf[data-c="3"] i.on{background:var(--c3)}
+.kk-conf small{font-size:11.5px;color:var(--ink3)}
+.kk-conf[data-c="3"] small{color:var(--gold)}
+.kk-conf[data-c="2"] small{color:var(--blue-ink)}
+
+/* figures dim as confidence drops — the core visual rule */
+.kk-fig{font-family:var(--serif);font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1}
+.kk-fig[data-c="0"]{color:var(--ink3);font-weight:300}
+.kk-fig[data-c="1"]{color:var(--ink2);font-weight:400}
+.kk-fig[data-c="2"]{color:var(--ink);font-weight:500}
+.kk-fig[data-c="3"]{color:var(--ink);font-weight:600}
+.kk-fig.unknown{color:var(--ink3);font-weight:300;font-style:italic;font-size:.62em;letter-spacing:0}
+
+.kk-metric{display:flex;flex-direction:column;gap:7px}
+.kk-metric .kk-fig{font-size:clamp(28px,3.6vw,38px)}
+.kk-metric .kk-fig.unknown{font-size:17px}
+.kk-metric .kk-lab{font-size:13px;color:var(--ink2)}
+.kk-metric .kk-note{font-size:11.5px;color:var(--ink3)}
+button.kk-metric{text-align:left;align-items:flex-start;width:100%;
+  border:1px solid var(--rule);border-radius:10px;background:var(--surface);padding:16px 17px}
+button.kk-metric:hover{border-color:var(--blue);background:var(--surface2)}
+
+/* ---------- funnel ---------- */
+.kk-funnel{display:flex;flex-direction:column;gap:3px}
+.kk-frow{display:grid;grid-template-columns:minmax(120px,190px) 1fr;gap:14px;align-items:center;
+  width:100%;text-align:left;padding:5px 6px;border-radius:7px}
+.kk-frow:hover{background:var(--surface2)}
+.kk-frow .kk-flab{font-size:13.5px;color:var(--ink2)}
+.kk-frow .kk-flab em{display:block;font-style:normal;font-size:11.5px;color:var(--ink3)}
+.kk-ftrack{display:flex;align-items:center;gap:10px;min-width:0}
+.kk-fbar{height:26px;border-radius:3px;background:var(--blue-tint);display:flex;overflow:hidden;
+  min-width:3px;transition:width .5s cubic-bezier(.2,.7,.3,1)}
+.kk-fbar i{display:block;height:100%;background:var(--blue);transition:width .5s}
+.kk-fbar.gold{background:var(--gold-tint)}
+.kk-fbar.gold i{background:var(--gold)}
+.kk-fcount{font-family:var(--serif);font-size:17px;font-weight:500;font-variant-numeric:tabular-nums}
+
+/* ---------- ladder ---------- */
+.kk-pips{display:inline-flex;gap:2px}
+.kk-pips i{width:7px;height:7px;border-radius:2px;background:var(--rule2);display:block}
+.kk-pips i.on{background:var(--blue)}
+.kk-pips i.on.gold{background:var(--gold)}
+.kk-ladder{display:flex;flex-direction:column;gap:0;margin:4px 0 0}
+.kk-step{display:grid;grid-template-columns:22px 1fr auto;gap:12px;align-items:flex-start;
+  padding:9px 0;border-bottom:1px solid var(--rule2)}
+.kk-step:last-child{border-bottom:none}
+.kk-dot{width:13px;height:13px;border-radius:50%;border:2px solid var(--rule);margin-top:3px;background:var(--surface)}
+.kk-step.done .kk-dot{background:var(--blue);border-color:var(--blue)}
+.kk-step.done.gold .kk-dot{background:var(--gold);border-color:var(--gold)}
+.kk-step.now .kk-dot{box-shadow:0 0 0 4px var(--blue-tint)}
+.kk-step .kk-sname{font-size:14px;font-weight:500}
+.kk-step.todo .kk-sname{color:var(--ink3);font-weight:400}
+.kk-step .kk-sdesc{font-size:12.5px;color:var(--ink3);margin-top:1px}
+.kk-step .kk-sdate{font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* ---------- tables ---------- */
+.kk-tablewrap{overflow-x:auto;border:1px solid var(--rule);border-radius:10px;background:var(--surface)}
+table.kk-table{border-collapse:collapse;width:100%;min-width:660px;font-size:13.5px}
+.kk-table th{
+  text-align:left;font-weight:500;font-size:12px;color:var(--ink3);
+  padding:10px 14px;border-bottom:1px solid var(--rule);background:var(--surface2);white-space:nowrap;
+}
+.kk-table td{padding:11px 14px;border-bottom:1px solid var(--rule2);vertical-align:middle}
+.kk-table tr:last-child td{border-bottom:none}
+.kk-table tbody tr:hover{background:var(--surface2)}
+.kk-table .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.kk-linkcell{font-weight:500;color:var(--blue-ink);text-align:left}
+.kk-linkcell:hover{text-decoration:underline}
+.kk-muted{color:var(--ink3)}
+.kk-gapcell{color:var(--ink3);font-style:italic;font-size:12.5px}
+
+/* ---------- pills / chips ---------- */
+.kk-pill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;padding:2px 9px;
+  border-radius:999px;background:var(--surface2);border:1px solid var(--rule);color:var(--ink2);white-space:nowrap}
+.kk-pill.blue{background:var(--blue-tint);border-color:transparent;color:var(--blue-ink)}
+.kk-pill.gold{background:var(--gold-tint);border-color:transparent;color:var(--gold)}
+.kk-pill.gap{border-style:dashed;color:var(--ink3);background:transparent}
+.kk-chips{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 14px}
+.kk-chip{font-size:12.5px;padding:5px 12px;border-radius:999px;border:1px solid var(--rule);
+  background:var(--surface);color:var(--ink2)}
+.kk-chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.kk-chipgroup{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.kk-chipgroup > span{font-size:12px;color:var(--ink3);margin-right:1px}
+
+/* ---------- buttons ---------- */
+.kk-btn{display:inline-flex;align-items:center;gap:7px;padding:8px 15px;border-radius:8px;
+  background:var(--blue);color:#fff;font-size:13.5px;font-weight:500}
+.kk-btn:hover{background:var(--blue-ink)}
+.kk-btn.ghost{background:transparent;color:var(--ink2);border:1px solid var(--rule)}
+.kk-btn.ghost:hover{background:var(--surface2);color:var(--ink)}
+.kk-btn.gold{background:var(--gold)}
+.kk-btn.sm{padding:5px 11px;font-size:12.5px}
+.kk-btn:disabled{opacity:.45;cursor:not-allowed}
+.kk-back{font-size:13px;color:var(--ink3);margin-bottom:12px;display:inline-flex;gap:6px;align-items:center}
+.kk-back:hover{color:var(--blue-ink)}
+
+/* ---------- forms ---------- */
+.kk-field{margin:0 0 18px}
+.kk-field label{display:block;font-size:14px;font-weight:500;margin-bottom:3px}
+.kk-field .kk-help{font-size:12.5px;color:var(--ink3);margin-bottom:8px}
+.kk-input, .kk-select, .kk-textarea{
+  width:100%;padding:9px 11px;border:1px solid var(--rule);border-radius:8px;
+  background:var(--surface);color:var(--ink);font:inherit;font-size:14px
+}
+.kk-textarea{min-height:76px;resize:vertical}
+.kk-radios{display:flex;flex-wrap:wrap;gap:8px}
+.kk-radio{border:1px solid var(--rule);border-radius:8px;padding:8px 14px;font-size:13.5px;
+  background:var(--surface);color:var(--ink2)}
+.kk-radio[aria-pressed="true"]{border-color:var(--blue);background:var(--blue-tint);color:var(--blue-ink);font-weight:500}
+.kk-steps{display:flex;gap:6px;margin-bottom:22px;align-items:center;flex-wrap:wrap}
+.kk-stepdot{font-size:12px;color:var(--ink3);display:flex;align-items:center;gap:6px}
+.kk-stepdot b{width:20px;height:20px;border-radius:50%;background:var(--surface2);border:1px solid var(--rule);
+  display:grid;place-items:center;font-size:11px;font-weight:500}
+.kk-stepdot.on b{background:var(--blue);border-color:var(--blue);color:#fff}
+.kk-stepdot.on{color:var(--ink)}
+
+/* ---------- drawer ---------- */
+.kk-scrim{position:fixed;inset:0;background:rgba(16,24,36,.42);z-index:60;opacity:0;pointer-events:none;transition:opacity .2s}
+.kk-scrim.open{opacity:1;pointer-events:auto}
+.kk-drawer{position:fixed;top:0;right:0;height:100%;width:min(480px,100%);background:var(--surface);
+  border-left:1px solid var(--rule);z-index:61;transform:translateX(100%);transition:transform .26s cubic-bezier(.2,.7,.3,1);
+  display:flex;flex-direction:column}
+.kk-drawer.open{transform:none}
+.kk-drawer header{padding:18px 22px 12px;border-bottom:1px solid var(--rule);display:flex;gap:12px;align-items:flex-start}
+.kk-drawer header h3{margin:0;font-family:var(--serif);font-weight:500;font-size:18px}
+.kk-drawer header p{margin:2px 0 0;font-size:12.5px;color:var(--ink3)}
+.kk-drawer .kk-dbody{padding:16px 22px 40px;overflow-y:auto}
+.kk-x{margin-left:auto;font-size:20px;line-height:1;color:var(--ink3);padding:2px 6px}
+
+/* ---------- toast ---------- */
+.kk-toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,16px);z-index:70;
+  background:var(--ink);color:var(--paper);padding:11px 18px;border-radius:9px;font-size:13.5px;
+  box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:all .22s;max-width:90vw}
+.kk-toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- misc ---------- */
+.kk-kv{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;font-size:13.5px}
+.kk-kv dt{color:var(--ink3)}
+.kk-kv dd{margin:0}
+.kk-evidence{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--rule2);align-items:flex-start}
+.kk-evidence:last-child{border-bottom:none}
+.kk-evicon{width:30px;height:30px;border-radius:7px;background:var(--surface2);border:1px solid var(--rule);
+  display:grid;place-items:center;font-size:14px;flex:none}
+.kk-gapline{display:flex;gap:10px;align-items:baseline;padding:9px 0;border-bottom:1px dashed var(--rule);font-size:13.5px}
+.kk-gapline:last-child{border-bottom:none}
+.kk-gapline b{font-family:var(--serif);font-weight:500;font-size:16px;color:var(--gold);
+  font-variant-numeric:tabular-nums;min-width:52px}
+.kk-story{border-left:2px solid var(--rule);padding-left:18px;margin:0 0 4px}
+.kk-story h4{margin:0 0 2px;font-size:12.5px;color:var(--ink3);font-weight:500}
+.kk-story p{margin:0 0 16px;font-size:14px;max-width:64ch}
+.kk-q{border-bottom:1px solid var(--rule2)}
+.kk-q summary{padding:13px 2px;cursor:pointer;font-size:15px;font-weight:500;list-style:none;display:flex;gap:10px;align-items:center}
+.kk-q summary::-webkit-details-marker{display:none}
+.kk-q summary::before{content:"+";color:var(--ink3);font-weight:400;width:14px}
+.kk-q[open] summary::before{content:"−"}
+.kk-q .kk-qa{padding:0 2px 18px 24px}
+.kk-hair{height:1px;background:var(--rule);border:none;margin:26px 0}
+.kk-public-hero{background:var(--ink);color:var(--paper);border-radius:14px;padding:clamp(26px,5vw,52px)}
+.kk-public-hero h1{font-family:var(--serif);font-weight:400;font-size:clamp(28px,5vw,46px);
+  line-height:1.08;letter-spacing:-.02em;margin:0 0 10px;max-width:18ch}
+.kk-public-hero p{color:#B9C6D6;max-width:52ch;margin:0;font-size:15.5px}
+.kk-public-nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:22px;margin-top:38px}
+.kk-public-nums b{display:block;font-family:var(--serif);font-weight:400;font-size:clamp(30px,4.6vw,42px);
+  letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.kk-public-nums span{font-size:12.5px;color:#93A6BC}
+.kk-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.kk-card{border:1px solid var(--rule);border-radius:10px;padding:16px 17px;background:var(--surface);text-align:left;width:100%}
+.kk-card:hover{border-color:var(--blue)}
+.kk-card h5{margin:0 0 4px;font-size:15px;font-weight:600;font-family:var(--serif)}
+.kk-card p{margin:0 0 11px;font-size:13px;color:var(--ink2);min-height:2.6em}
+.kk-empty{border:1px dashed var(--rule);border-radius:10px;padding:26px;text-align:center;color:var(--ink3);font-size:14px}
+.kk-flag{display:flex;gap:11px;padding:13px 15px;border-radius:9px;background:var(--gold-tint);
+  border:1px solid rgba(177,140,84,.3);font-size:13px;color:var(--ink2);margin-bottom:22px}
+.kk-flag b{color:var(--gold)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="kk-scrim" id="scrim"></div>
+<aside class="kk-drawer" id="drawer" aria-hidden="true"></aside>
+<div class="kk-toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+/* =========================================================================
+   KayKav Builder Impact — clickable prototype
+   All figures below are ILLUSTRATIVE seed data for interface testing.
+   Documented facts (cohort dates, enrolment, countries, participant and
+   product names) come from the Impact Measurement Framework v1.
+   Everything else is placeholder and must never be reported as result.
+   ========================================================================= */
+
+const TODAY = new Date('2026-09-16');
+
+/* ---- reference ladders ---------------------------------------------- */
+const LEVELS = [
+  {n:0, name:'Idea',      desc:'A defined problem exists, no meaningful build has started.'},
+  {n:1, name:'Built',     desc:'A functional MVP exists and can do its core job.'},
+  {n:2, name:'Deployed',  desc:'Accessible on a live URL or production environment.'},
+  {n:3, name:'Validated', desc:'A real user outside the build process has used it for its purpose.'},
+  {n:4, name:'Active',    desc:'Meaningful usage in the last 30 days.'},
+  {n:5, name:'Traction',  desc:'Sustained or growing adoption.'},
+  {n:6, name:'Revenue',   desc:'At least one real customer has paid.'},
+  {n:7, name:'Business',  desc:'An ongoing commercial or organisational operation.'},
+  {n:8, name:'Scale',     desc:'Substantial, sustained growth beyond initial validation.'}
+];
+const CONF = [
+  {n:0, name:'Self-reported',      desc:'A claim with no supporting evidence.'},
+  {n:1, name:'Evidence submitted', desc:'The builder has attached supporting evidence. Not yet checked.'},
+  {n:2, name:'KayKav verified',    desc:'A KayKav reviewer has checked the evidence and accepted it.'},
+  {n:3, name:'Connected data',     desc:'Read directly from an integrated system.'}
+];
+
+/* ---- helpers to declare a measurement ------------------------------- */
+// value === null means "we have not collected this" — a visible gap, not a zero.
+const m  = (value, conf, source, date) => ({value, conf, source, date});
+const gap = (why) => ({value:null, conf:null, source:null, date:null, why:why||'Not collected yet'});
+
+const DB = {
+  programmes:[
+    {id:'bnp', name:'Built, Not Prompted', short:'BNP',
+     desc:'Four-week cohort teaching AI-assisted product development. Participants leave with a deployed product.'},
+    {id:'deb', name:'Domain Expert Builders', short:'DEB',
+     desc:'Sector professionals building tools for their own field. First cohort not yet run.'}
+  ],
+
+  cohorts:[
+    {id:'bnp01', programmeId:'bnp', name:'BNP Cohort 01', start:'2026-04-30', end:'2026-05-30',
+     demoDay:'2026-05-30', enrolled:32, recorded:12, countries:['Nigeria','United States','United Kingdom','Canada','Sweden','Ireland'],
+     continents:3, sessions:9, note:'12 live products shipped. 20 participant records still to be backfilled.'},
+    {id:'bnp02', programmeId:'bnp', name:'BNP Cohort 02', start:'2026-07-01', end:'2026-08-07',
+     demoDay:'2026-08-07', enrolled:8, recorded:8, countries:['Nigeria'], continents:1, sessions:9,
+     note:'First cohort capturing impact data from day one.'},
+    {id:'deb01', programmeId:'deb', name:'DEB Cohort 01', start:null, end:null, demoDay:null,
+     enrolled:0, recorded:0, countries:[], continents:0, sessions:0, note:'Not yet run.'}
+  ],
+
+  builders:[
+    // --- BNP Cohort 01 (names pending backfill from programme records) ---
+    {id:'b01', name:'Tola A.',        country:'Nigeria',       background:'Product designer',        cohortId:'bnp01', completed:true, continuing:'yes'},
+    {id:'b02', name:'Rukayat B.',     country:'United Kingdom',background:'Dietitian',               cohortId:'bnp01', completed:true, continuing:'yes'},
+    {id:'b03', name:'Daniel O.',      country:'Canada',        background:'Travel operations',       cohortId:'bnp01', completed:true, continuing:'unknown'},
+    {id:'b04', name:'Chidi N.',       country:'Nigeria',       background:'Management consultant',   cohortId:'bnp01', completed:true, continuing:'unknown'},
+    {id:'b05', name:'Engr. Sola K.',  country:'Nigeria',       background:'Structural engineer',     cohortId:'bnp01', completed:true, continuing:'yes'},
+    {id:'b06', name:'Marcus T.',      country:'United States', background:'Paralegal',               cohortId:'bnp01', completed:true, continuing:'yes'},
+    {id:'b07', name:'Elin S.',        country:'Sweden',        background:'Events planner',          cohortId:'bnp01', completed:true, continuing:'no'},
+    {id:'b08', name:null,             country:'Ireland',       background:null,                      cohortId:'bnp01', completed:true, continuing:'unknown'},
+    {id:'b09', name:null,             country:'Nigeria',       background:null,                      cohortId:'bnp01', completed:true, continuing:'unknown'},
+    {id:'b10', name:null,             country:null,            background:null,                      cohortId:'bnp01', completed:true, continuing:'unknown'},
+    {id:'b11', name:null,             country:null,            background:null,                      cohortId:'bnp01', completed:true, continuing:'unknown'},
+    {id:'b12', name:null,             country:null,            background:null,                      cohortId:'bnp01', completed:true, continuing:'unknown'},
+    // --- BNP Cohort 02 ---
+    {id:'b13', name:'Moyo',    country:'Nigeria', background:'Livestock trader',       cohortId:'bnp02', completed:true, continuing:'yes'},
+    {id:'b14', name:'Kenny',   country:'Nigeria', background:'Retail supervisor',      cohortId:'bnp02', completed:true, continuing:'yes'},
+    {id:'b15', name:'Eniola',  country:'Nigeria', background:'Clinic administrator',   cohortId:'bnp02', completed:true, continuing:'yes'},
+    {id:'b16', name:'Blossom', country:'Nigeria', background:'Secondary school teacher',cohortId:'bnp02',completed:true, continuing:'unknown'},
+    {id:'b17', name:'Osaz',    country:'Nigeria', background:'Fintech operations',     cohortId:'bnp02', completed:true, continuing:'unknown'},
+    {id:'b18', name:'Jacob',   country:'Nigeria', background:'Site supervisor',        cohortId:'bnp02', completed:true, continuing:'yes'},
+    {id:'b19', name:'Abiola',  country:'Nigeria', background:'Insurance broker',       cohortId:'bnp02', completed:true, continuing:'unknown'},
+    {id:'b20', name:'Gift',    country:'Nigeria', background:'Market wholesaler',      cohortId:'bnp02', completed:true, continuing:'unknown'}
+  ],
+
+  products:[
+    {id:'p01', name:'Nestly', aka:'formerly MyBabyLog', builderId:'b01', cohortId:'bnp01',
+     domain:'Health & parenting', country:'Nigeria', url:'nestly.app',
+     desc:'Feed, sleep and milestone log for new parents, shared across both caregivers.',
+     level:5, history:{1:'2026-05-14',2:'2026-05-28',3:'2026-06-04',4:'2026-06-30',5:'2026-08-21'},
+     metrics:{users:m(340,2,'Analytics screenshot, checked by KayKav','2026-08-28'),
+              mau:m(198,2,'Analytics screenshot','2026-08-28'),
+              paying:m(3,1,'Payment screenshots submitted 12 Sep','2026-09-12'),
+              revenue:m(29,1,'Payment screenshots submitted 12 Sep','2026-09-12'),
+              mrr:gap('Awaiting verification of first payments'),
+              orgs:gap('Not applicable')},
+     impact:[{label:'Parents supported', value:340, conf:2},
+             {label:'Night feeds logged', value:11400, conf:1}],
+     timeline:[{d:30,date:'2026-06-29',users:41,revenue:0},{d:90,date:'2026-08-28',users:340,revenue:0}]},
+
+    {id:'p02', name:'BitePlan', aka:null, builderId:'b02', cohortId:'bnp01',
+     domain:'Nutrition', country:'United Kingdom', url:'biteplan.co.uk',
+     desc:'Meal plans a dietitian can generate for a client in minutes instead of an evening.',
+     level:6, history:{1:'2026-05-12',2:'2026-05-26',3:'2026-06-02',4:'2026-06-18',5:'2026-07-22',6:'2026-07-09'},
+     metrics:{users:m(1240,3,'PostHog','2026-09-15'),
+              mau:m(612,3,'PostHog','2026-09-15'),
+              paying:m(24,3,'Paystack','2026-09-15'),
+              revenue:m(1980,3,'Paystack','2026-09-15'),
+              mrr:m(180,3,'Paystack','2026-09-15'),
+              orgs:m(9,2,'Client list, checked by KayKav','2026-09-01')},
+     impact:[{label:'Dietitian hours saved per month', value:96, conf:1},
+             {label:'Client plans issued', value:1480, conf:3}],
+     timeline:[{d:30,date:'2026-06-29',users:180,revenue:0},{d:90,date:'2026-08-28',users:940,revenue:1420}]},
+
+    {id:'p03', name:'Wandar', aka:null, builderId:'b03', cohortId:'bnp01',
+     domain:'Travel', country:'Canada', url:'wandar.travel',
+     desc:'Group trip planner that settles the itinerary argument before anyone books.',
+     level:3, history:{1:'2026-05-16',2:'2026-05-29',3:'2026-06-21'},
+     metrics:{users:m(62,0,'Builder check-in','2026-06-29'), mau:gap(), paying:gap(),
+              revenue:gap(), mrr:gap(), orgs:gap()},
+     impact:[], timeline:[{d:30,date:'2026-06-29',users:62,revenue:0}]},
+
+    {id:'p04', name:'Precision', aka:null, builderId:'b04', cohortId:'bnp01',
+     domain:'Professional services', country:'Nigeria', url:'precision-ops.com',
+     desc:'Scoping and estimate builder for a small consulting practice.',
+     level:2, history:{1:'2026-05-15',2:'2026-05-30'},
+     metrics:{users:gap('No check-in returned'), mau:gap(), paying:gap(), revenue:gap(), mrr:gap(), orgs:gap()},
+     impact:[], timeline:[]},
+
+    {id:'p05', name:'DDT Structure', aka:null, builderId:'b05', cohortId:'bnp01',
+     domain:'Construction & engineering', country:'Nigeria', url:'ddtstructure.com',
+     desc:'Structural load calculations and drawing register for small engineering firms.',
+     level:5, history:{1:'2026-05-13',2:'2026-05-27',3:'2026-06-08',4:'2026-07-02',5:'2026-09-01'},
+     metrics:{users:m(210,1,'Dashboard screenshot submitted 9 Sep','2026-09-09'),
+              mau:m(88,1,'Dashboard screenshot','2026-09-09'),
+              paying:gap(), revenue:gap(), mrr:gap(),
+              orgs:m(6,2,'Firm names supplied and checked','2026-09-02')},
+     impact:[{label:'Engineering firms served', value:6, conf:2},
+             {label:'Drawings checked', value:1120, conf:1}],
+     timeline:[{d:30,date:'2026-06-29',users:34,revenue:0},{d:90,date:'2026-08-28',users:175,revenue:0}]},
+
+    {id:'p06', name:'DraftDesk', aka:null, builderId:'b06', cohortId:'bnp01',
+     domain:'Legal', country:'United States', url:'draftdesk.legal',
+     desc:'Clause library and first-draft assembly for a two-person legal practice.',
+     level:4, history:{1:'2026-05-14',2:'2026-05-30',3:'2026-06-11',4:'2026-07-15'},
+     metrics:{users:m(480,0,'Builder check-in','2026-08-28'), mau:m(120,0,'Builder check-in','2026-08-28'),
+              paying:gap(), revenue:gap(), mrr:gap(), orgs:gap()},
+     impact:[{label:'Drafting hours saved', value:220, conf:0}],
+     timeline:[{d:30,date:'2026-06-29',users:96,revenue:0},{d:90,date:'2026-08-28',users:480,revenue:0}]},
+
+    {id:'p07', name:'Ideas Journal', aka:'Wedding Planner & Ideas Journal', builderId:'b07', cohortId:'bnp01',
+     domain:'Events', country:'Sweden', url:'ideasjournal.se',
+     desc:'Wedding planning workspace: suppliers, budget and a running ideas board.',
+     level:2, history:{1:'2026-05-17',2:'2026-05-30'},
+     metrics:{users:m(0,0,'Builder check-in — no users yet','2026-06-29'), mau:gap(), paying:gap(),
+              revenue:gap(), mrr:gap(), orgs:gap()},
+     impact:[], timeline:[{d:30,date:'2026-06-29',users:0,revenue:0}], note:'Builder reported pausing work after Demo Day.'},
+
+    {id:'p08', name:null, aka:null, builderId:'b08', cohortId:'bnp01', domain:null, country:'Ireland', url:null,
+     desc:null, level:2, history:{2:'2026-05-30'},
+     metrics:{users:gap(), mau:gap(), paying:gap(), revenue:gap(), mrr:gap(), orgs:gap()}, impact:[], timeline:[]},
+    {id:'p09', name:null, aka:null, builderId:'b09', cohortId:'bnp01', domain:null, country:'Nigeria', url:null,
+     desc:null, level:2, history:{2:'2026-05-30'},
+     metrics:{users:gap(), mau:gap(), paying:gap(), revenue:gap(), mrr:gap(), orgs:gap()}, impact:[], timeline:[]},
+    {id:'p10', name:null, aka:null, builderId:'b10', cohortId:'bnp01', domain:null, country:null, url:null,
+     desc:null, level:2, history:{2:'2026-05-30'},
+     metrics:{users:gap(), mau:gap(), paying:gap(), revenue:gap(), mrr:gap(), orgs:gap()}, impact:[], timeline:[]},
+    {id:'p11', name:null, aka:null, builderId:'b11', cohortId:'bnp01', domain:null, country:null, url:null,
+     desc:null, level:2, history:{2:'2026-05-30'},
+     metrics:{users:gap(), mau:gap(), paying:gap(), revenue:gap(), mrr:gap(), orgs:gap()}, impact:[], timeline:[]},
+    {id:'p12', name:null, aka:null, builderId:'b12', cohortId:'bnp01', domain:null, country:null, url:null,
+     desc:null, level:2, history:{2:'2026-05-30'},
+     metrics:{users:gap(), mau:gap(), paying:gap(), revenue:gap(), mrr:gap(), orgs:gap()}, impact:[], timeline:[]},
+
+    {id:'p13', name:'Herd', aka:null, builderId:'b13', cohortId:'bnp02',
+     domain:'Agriculture', country:'Nigeria', url:'herd.ng',
+     desc:'Livestock records and sale prices for traders working across three markets.',
+     level:3, history:{1:'2026-07-20',2:'2026-08-05',3:'2026-08-24'},
+     metrics:{users:m(31,0,'Builder check-in','2026-08-24'), mau:gap(), paying:gap(), revenue:gap(), mrr:gap(), orgs:gap()},
+     impact:[{label:'Traders using it', value:31, conf:0}], timeline:[]},
+
+    {id:'p14', name:'Shelfy', aka:null, builderId:'b14', cohortId:'bnp02',
+     domain:'Retail', country:'Nigeria', url:'shelfy.store',
+     desc:'Stock counts and reorder alerts for a four-branch supermarket.',
+     level:2, history:{1:'2026-07-22',2:'2026-08-06'},
+     metrics:{users:gap('30-day check-in overdue'), mau:gap(), paying:gap(), revenue:gap(), mrr:gap(), orgs:gap()},
+     impact:[], timeline:[]},
+
+    {id:'p15', name:'ClinicQueue', aka:null, builderId:'b15', cohortId:'bnp02',
+     domain:'Healthcare', country:'Nigeria', url:'clinicqueue.ng',
+     desc:'Appointment queue that replaces the paper register at a private clinic.',
+     level:4, history:{1:'2026-07-18',2:'2026-08-02',3:'2026-08-14',4:'2026-09-05'},
+     metrics:{users:m(94,1,'Admin dashboard screenshot submitted 8 Sep','2026-09-08'),
+              mau:m(94,1,'Admin dashboard screenshot','2026-09-08'),
+              paying:gap(), revenue:gap(), mrr:gap(),
+              orgs:m(2,1,'Clinic names submitted 8 Sep','2026-09-08')},
+     impact:[{label:'Patients checked in', value:1860, conf:1},
+             {label:'Average wait reduced (mins)', value:23, conf:0}],
+     timeline:[{d:30,date:'2026-09-06',users:94,revenue:0}]},
+
+    {id:'p16', name:'Storyseed', aka:null, builderId:'b16', cohortId:'bnp02',
+     domain:'Education', country:'Nigeria', url:'storyseed.ng',
+     desc:'Reading comprehension exercises a teacher can generate per class.',
+     level:2, history:{1:'2026-07-24',2:'2026-08-07'},
+     metrics:{users:gap('30-day check-in overdue'), mau:gap(), paying:gap(), revenue:gap(), mrr:gap(), orgs:gap()},
+     impact:[], timeline:[]},
+
+    {id:'p17', name:'SiteLog', aka:null, builderId:'b18', cohortId:'bnp02',
+     domain:'Construction', country:'Nigeria', url:'sitelog.build',
+     desc:'Daily site report with photos, replacing the WhatsApp thread.',
+     level:3, history:{1:'2026-07-21',2:'2026-08-04',3:'2026-08-29'},
+     metrics:{users:m(18,0,'Builder check-in','2026-09-04'), mau:gap(), paying:gap(), revenue:gap(), mrr:gap(), orgs:gap()},
+     impact:[], timeline:[{d:30,date:'2026-09-06',users:18,revenue:0}]},
+
+    {id:'p18', name:'PayRoute', aka:null, builderId:'b17', cohortId:'bnp02',
+     domain:'Financial services', country:'Nigeria', url:null,
+     desc:'Reconciliation helper for an operations team handling split settlements.',
+     level:1, history:{1:'2026-08-01'},
+     metrics:{users:gap(), mau:gap(), paying:gap(), revenue:gap(), mrr:gap(), orgs:gap()},
+     impact:[], timeline:[], note:'Built but never deployed. Builder cited an approval blocker at work.'}
+  ],
+
+  /* builders with no product record at all — a visible gap, not a deletion */
+  noProduct:[{builderId:'b19', why:'Product not yet recorded'},{builderId:'b20', why:'Product not yet recorded'}],
+
+  checkins:[
+    {id:'c1', cohortId:'bnp01', window:30,  due:'2026-06-29', expected:12, returned:9},
+    {id:'c2', cohortId:'bnp01', window:90,  due:'2026-08-28', expected:12, returned:7},
+    {id:'c3', cohortId:'bnp01', window:180, due:'2026-11-26', expected:12, returned:0},
+    {id:'c4', cohortId:'bnp01', window:365, due:'2027-05-30', expected:12, returned:0},
+    {id:'c5', cohortId:'bnp02', window:30,  due:'2026-09-06', expected:8,  returned:4},
+    {id:'c6', cohortId:'bnp02', window:90,  due:'2026-11-05', expected:8,  returned:0},
+    {id:'c7', cohortId:'bnp02', window:180, due:'2027-02-03', expected:8,  returned:0},
+    {id:'c8', cohortId:'bnp02', window:365, due:'2027-08-07', expected:8,  returned:0}
+  ],
+
+  /* per-builder check-in state, used by the builder view */
+  builderCheckins:[
+    {builderId:'b13', productId:'p13', window:30, due:'2026-09-06', status:'overdue'},
+    {builderId:'b14', productId:'p14', window:30, due:'2026-09-06', status:'overdue'},
+    {builderId:'b15', productId:'p15', window:30, due:'2026-09-06', status:'submitted', on:'2026-09-08'},
+    {builderId:'b16', productId:'p16', window:30, due:'2026-09-06', status:'overdue'},
+    {builderId:'b17', productId:'p18', window:30, due:'2026-09-06', status:'submitted', on:'2026-09-03'},
+    {builderId:'b18', productId:'p17', window:30, due:'2026-09-06', status:'submitted', on:'2026-09-04'}
+  ],
+
+  /* verification queue — evidence waiting on a KayKav reviewer */
+  queue:[
+    {id:'q1', productId:'p01', metric:'revenue', claim:'First 3 paying customers, ₦45,000 total (~$29)',
+     evidence:'3 Paystack payment screenshots', from:'Tola A.', date:'2026-09-12',
+     status:'pending', promotesTo:6},
+    {id:'q2', productId:'p05', metric:'users', claim:'210 registered users',
+     evidence:'Admin dashboard screenshot', from:'Engr. Sola K.', date:'2026-09-09', status:'pending'},
+    {id:'q3', productId:'p15', metric:'users', claim:'94 patients checked in through the queue',
+     evidence:'Clinic dashboard screenshot', from:'Eniola', date:'2026-09-08', status:'pending'},
+    {id:'q4', productId:'p15', metric:'orgs', claim:'2 clinics using it daily',
+     evidence:'Clinic names and contact for one manager', from:'Eniola', date:'2026-09-08', status:'pending'}
+  ],
+
+  stories:[
+    {id:'s1', productId:'p02', title:'A dietitian stopped spending her evenings on meal plans',
+     before:'Rukayat ran a nutrition practice in Manchester and wrote every client meal plan by hand, usually after dinner.',
+     kaykav:'She joined BNP Cohort 01 with a problem rather than an idea, and spent week one on architecture before any code.',
+     ship:'BitePlan went live on 26 May 2026 and took its first paying client six weeks later.',
+     after:'It now serves 1,240 registered users across 9 practices, with £180 in monthly recurring revenue read directly from Paystack.',
+     verified:true},
+    {id:'s2', productId:'p05', title:'Six engineering firms replaced a spreadsheet they all hated',
+     before:'Sola checked structural drawings for small firms and kept the register in a workbook nobody else could open.',
+     kaykav:'BNP Cohort 01. The product he scoped was the one he already did by hand every week.',
+     ship:'DDT Structure deployed on 27 May 2026.',
+     after:'Six firms now use it. The 210-user figure is submitted but not yet verified, so it is shown at evidence level, not as fact.',
+     verified:false}
+  ]
+};
+
+/* =========================== state ================================== */
+const state = {
+  mode:'internal',
+  route:{name:'overview'},
+  actingAs:'b13',
+  filters:{cohort:'all', level:'all', conf:'all'},
+  checkin:{open:false, step:0, draft:{}}
+};
+
+/* =========================== helpers ================================ */
+const $ = s => document.querySelector(s);
+const byId = (arr,id) => arr.find(x => x.id === id);
+const fmt = n => n === null || n === undefined ? '—' : n.toLocaleString('en-US');
+const money = n => n === null || n === undefined ? '—' : '$' + n.toLocaleString('en-US');
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const dt = s => s ? new Date(s + 'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—';
+const dtShort = s => s ? new Date(s + 'T00:00:00').toLocaleDateString('en-GB',{month:'short',year:'numeric'}) : '—';
+const pct = (a,b) => b ? Math.round(a/b*100) : 0;
+
+const productName = p => !p ? 'your product' : (p.name || 'Unnamed product (' + p.id.toUpperCase() + ')');
+const builderName = b => b && b.name ? b.name : 'Name pending backfill';
+const builderOf = p => byId(DB.builders, p.builderId);
+const cohortOf = x => byId(DB.cohorts, x.cohortId);
+const productsOf = bid => DB.products.filter(p => p.builderId === bid);
+
+function confMeter(c, withLabel){
+  if(c === null || c === undefined) return '<span class="kk-pill gap">No data</span>';
+  const bars = [0,1,2,3].map(i => '<i class="' + (i <= c ? 'on' : '') + '"></i>').join('');
+  return '<span class="kk-conf" data-c="' + c + '" title="' + esc(CONF[c].name + ' — ' + CONF[c].desc) + '">' +
+    '<span class="kk-conf-bars">' + bars + '</span>' +
+    (withLabel === false ? '' : '<small>' + CONF[c].name + '</small>') + '</span>';
+}
+
+/* a measurement rendered at its own confidence weight */
+function figure(mo, opts){
+  opts = opts || {};
+  const f = opts.format || fmt;
+  if(!mo || mo.value === null || mo.value === undefined){
+    return '<span class="kk-fig unknown">' + esc(opts.gapText || (mo && mo.why) || 'Not collected') + '</span>';
+  }
+  return '<span class="kk-fig" data-c="' + mo.conf + '">' + f(mo.value) + '</span>';
+}
+
+function levelPips(level){
+  const gold = level >= 5;
+  return '<span class="kk-pips" title="' + esc('Level ' + level + ' — ' + LEVELS[level].name) + '">' +
+    LEVELS.map(l => '<i class="' + (l.n <= level ? 'on' + (gold ? ' gold' : '') : '') + '"></i>').join('') + '</span>';
+}
+function levelPill(level){
+  const cls = level >= 5 ? 'gold' : level >= 2 ? 'blue' : '';
+  return '<span class="kk-pill ' + cls + '">' + LEVELS[level].name + '</span>';
+}
+
+/* =========================== aggregates ============================= */
+function agg(){
+  const P = DB.products;
+  const atLeast = n => P.filter(p => p.level >= n);
+  const enrolled = DB.cohorts.reduce((s,c) => s + c.enrolled, 0);
+
+  const knownUsers = P.filter(p => p.metrics.users && p.metrics.users.value !== null);
+  const usersReached = knownUsers.reduce((s,p) => s + p.metrics.users.value, 0);
+  const revenueProducts = P.filter(p => p.metrics.revenue && p.metrics.revenue.value > 0);
+  const revenueTotal = revenueProducts.reduce((s,p) => s + p.metrics.revenue.value, 0);
+  const revenueVerified = revenueProducts.filter(p => p.metrics.revenue.conf >= 2)
+                                         .reduce((s,p) => s + p.metrics.revenue.value, 0);
+
+  let known = 0, verified = 0;
+  P.forEach(p => Object.values(p.metrics).forEach(mo => {
+    if(mo && mo.value !== null){ known++; if(mo.conf >= 2) verified++; }
+  }));
+
+  const continuing = DB.builders.filter(b => b.continuing === 'yes').length;
+  const contUnknown = DB.builders.filter(b => b.continuing === 'unknown').length;
+
+  // survival: share of deployed products in a cohort still at Active or above
+  const survival = (cohortId, win) => {
+    const c = byId(DB.cohorts, cohortId);
+    const elapsed = Math.round((TODAY - new Date(c.demoDay + 'T00:00:00')) / 86400000);
+    if(elapsed < win) return {due:false, elapsed};
+    const shipped = P.filter(p => p.cohortId === cohortId && p.level >= 2);
+    const alive = shipped.filter(p => (p.timeline.find(t => t.d === win) || {}).users > 0 || p.level >= 4);
+    const answered = shipped.filter(p => p.timeline.some(t => t.d === win) || p.level >= 4);
+    return {due:true, alive:alive.length, of:shipped.length, answered:answered.length, elapsed};
+  };
+
+  return {
+    enrolled,
+    builderRecords: DB.builders.length,
+    buildersWithProduct: DB.builders.filter(b => productsOf(b.id).some(p => p.level >= 1)).length,
+    products: P.length,
+    built: atLeast(1).length, deployed: atLeast(2).length, validated: atLeast(3).length,
+    active: atLeast(4).length, traction: atLeast(5).length, revenueLv: atLeast(6).length,
+    business: atLeast(7).length, scale: atLeast(8).length,
+    usersReached, usersKnownOn: knownUsers.length,
+    revenueTotal, revenueVerified, revenueProducts: revenueProducts.length,
+    countries: [...new Set(P.map(p => p.country).filter(Boolean))].length,
+    cohortCountries: [...new Set(DB.cohorts.flatMap(c => c.countries))].length,
+    known, verified, verifiedShare: pct(verified, known),
+    continuing, contUnknown,
+    pending: DB.queue.filter(q => q.status === 'pending').length,
+    checkinReturned: DB.checkins.reduce((s,c) => s + c.returned, 0),
+    checkinExpected: DB.checkins.filter(c => new Date(c.due) <= TODAY).reduce((s,c) => s + c.expected, 0),
+    survival
+  };
+}
+
+/* =========================== funnel ================================= */
+function funnelRows(){
+  const a = agg();
+  return [
+    {k:'trained',   label:'People trained',        sub:'Enrolled across 2 cohorts', n:a.enrolled, gold:false},
+    {k:'builders',  label:'Builders',              sub:'Records with at least one build', n:a.buildersWithProduct},
+    {k:'built',     label:'Products built',        sub:'Functional MVP exists', n:a.built},
+    {k:'deployed',  label:'Products deployed',     sub:'Live on a URL', n:a.deployed},
+    {k:'validated', label:'Used by a real person', sub:'Level 3 and above', n:a.validated},
+    {k:'active',    label:'Active products',       sub:'Usage in the last 30 days', n:a.active},
+    {k:'traction',  label:'With traction',         sub:'Sustained or growing', n:a.traction, gold:true},
+    {k:'revenue',   label:'Revenue-generating',    sub:'A real customer has paid', n:a.revenueLv, gold:true},
+    {k:'business',  label:'Businesses',            sub:'An ongoing operation', n:a.business, gold:true}
+  ];
+}
+function funnelHTML(){
+  const rows = funnelRows();
+  const max = rows[0].n || 1;
+  return '<div class="kk-funnel">' + rows.map(r => {
+    const w = Math.max(2, Math.round(r.n / max * 100));
+    return '<button class="kk-frow" data-act="drill" data-arg="' + r.k + '">' +
+      '<span class="kk-flab">' + esc(r.label) + '<em>' + esc(r.sub) + '</em></span>' +
+      '<span class="kk-ftrack"><span class="kk-fbar' + (r.gold ? ' gold' : '') + '" style="width:' + w + '%"></span>' +
+      '<span class="kk-fcount">' + r.n + '</span></span></button>';
+  }).join('') + '</div>';
+}
+
+/* =========================== shell ================================== */
+const NAV = {
+  internal:[
+    {g:'Measure'},
+    {r:'overview',   t:'Overview'},
+    {r:'products',   t:'Product observatory'},
+    {r:'builders',   t:'Builder observatory'},
+    {g:'Collect'},
+    {r:'checkins',   t:'Check-ins'},
+    {r:'verify',     t:'Verification queue', badge:true},
+    {g:'Report'},
+    {r:'stories',    t:'Impact stories'},
+    {r:'gaps',       t:'What we don\'t know'},
+    {r:'dictionary', t:'Metric dictionary'}
+  ],
+  funder:[
+    {g:'Impact'},
+    {r:'funder',     t:'Impact overview'},
+    {r:'products',   t:'Products'},
+    {r:'stories',    t:'Stories'},
+    {g:'Evidence'},
+    {r:'trust',      t:'How numbers are checked'},
+    {r:'gaps',       t:'What is not yet known'}
+  ]
+};
+
+function shell(inner){
+  const a = agg();
+  const modes = [['internal','KayKav team'],['funder','Funder'],['public','Public'],['builder','Builder']];
+  const top =
+    '<header class="kk-top">' +
+      '<span class="kk-wordmark"><b>KayKav Builder Impact</b><span>Impact platform v1</span></span>' +
+      '<span class="kk-demo">Prototype &middot; illustrative data</span>' +
+      '<div class="kk-modes" role="group" aria-label="View as">' +
+        modes.map(([k,t]) => '<button data-act="mode" data-arg="' + k + '" aria-pressed="' +
+          (state.mode === k) + '">' + t + '</button>').join('') +
+      '</div>' +
+      '<button class="kk-theme" data-act="theme" title="Switch light or dark">◐</button>' +
+    '</header>';
+
+  const nav = NAV[state.mode];
+  if(!nav) return top + '<div class="kk-body"><main class="kk-main">' + inner + '</main></div>';
+
+  const rail = '<nav class="kk-rail">' + nav.map(i => {
+    if(i.g) return '<h6>' + esc(i.g) + '</h6>';
+    const cur = state.route.name === i.r ? ' aria-current="page"' : '';
+    const badge = i.badge && a.pending ? '<span class="kk-count">' + a.pending + '</span>' : '';
+    return '<button class="kk-navitem" data-act="go" data-arg="' + i.r + '"' + cur + '>' + esc(i.t) + badge + '</button>';
+  }).join('') + '</nav>';
+
+  return top + '<div class="kk-body">' + rail + '<main class="kk-main">' + inner + '</main></div>';
+}
+
+/* =========================== drawer / toast ========================= */
+function openDrawer(title, sub, body){
+  $('#drawer').innerHTML =
+    '<header><div><h3>' + title + '</h3><p>' + sub + '</p></div>' +
+    '<button class="kk-x" data-act="closedrawer" aria-label="Close">×</button></header>' +
+    '<div class="kk-dbody">' + body + '</div>';
+  $('#drawer').classList.add('open');
+  $('#drawer').setAttribute('aria-hidden','false');
+  $('#scrim').classList.add('open');
+}
+function closeDrawer(){
+  $('#drawer').classList.remove('open');
+  $('#drawer').setAttribute('aria-hidden','true');
+  $('#scrim').classList.remove('open');
+}
+let toastTimer;
+function toast(msg){
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3600);
+}
+
+/* =========================== view: overview ========================= */
+function vOverview(){
+  const a = agg();
+  const s30 = a.survival('bnp01',30), s90 = a.survival('bnp01',90);
+  const northStar = [
+    {k:'builders', lab:'Builders trained', val:a.enrolled, note:'Enrolled across BNP 01 and 02'},
+    {k:'deployed', lab:'Products shipped', val:a.deployed, note:'Reached a live URL'},
+    {k:'active',   lab:'Still active',     val:a.active,   note:'Used in the last 30 days'},
+    {k:'users',    lab:'People reached',   val:a.usersReached, note:'Known for ' + a.usersKnownOn + ' of ' + a.products + ' products'},
+    {k:'revenue',  lab:'Verified revenue', val:a.revenueVerified, money:true, note:'Of ' + money(a.revenueTotal) + ' reported'},
+    {k:'cont',     lab:'Still building',   val:a.continuing, note:a.contUnknown + ' builders unreached'}
+  ];
+
+  return '' +
+  '<h1 class="kk-h1">What KayKav builders have made, and what became of it</h1>' +
+  '<p class="kk-lede">Every figure here carries the strength of its evidence. Numbers that are only claimed are drawn lighter than numbers a reviewer or a connected system has confirmed.</p>' +
+
+  '<div class="kk-flag"><span>◇</span><div><b>This is seeded data.</b> Cohort dates, enrolment, countries and product names come from programme records. Usage, revenue and impact figures are placeholders for testing the interface and must not be reported.</div></div>' +
+
+  '<section class="kk-section"><h2 class="kk-h2">The impact funnel</h2>' +
+  '<p class="kk-sub">Each stage is a subset of the one above it. Select a stage to see the records behind the number.</p>' +
+  '<div class="kk-panel">' + funnelHTML() + '</div></section>' +
+
+  '<section class="kk-section"><h2 class="kk-h2">North star</h2>' +
+  '<p class="kk-sub">Six figures KayKav reports at executive level. Nothing about attendance, lessons or prompts appears here.</p>' +
+  '<div class="kk-grid three">' + northStar.map(n =>
+    '<button class="kk-metric" data-act="drill" data-arg="' + n.k + '">' +
+      '<span class="kk-fig" data-c="2">' + (n.money ? money(n.val) : fmt(n.val)) + '</span>' +
+      '<span class="kk-lab">' + n.lab + '</span><span class="kk-note">' + esc(n.note) + '</span>' +
+    '</button>').join('') + '</div></section>' +
+
+  '<section class="kk-section"><h2 class="kk-h2">Does it last?</h2>' +
+  '<p class="kk-sub">Share of Cohort 01\'s shipped products still active after each period. The later windows are not due yet, so they are shown as pending rather than as zero.</p>' +
+  '<div class="kk-panel"><div class="kk-grid three">' +
+    survivalCard('30 days', s30) + survivalCard('90 days', s90) +
+    survivalCard('180 days', a.survival('bnp01',180)) + survivalCard('365 days', a.survival('bnp01',365)) +
+  '</div></div></section>' +
+
+  '<section class="kk-section"><h2 class="kk-h2">Confidence in the numbers</h2>' +
+  '<div class="kk-panel">' +
+    '<div class="kk-grid two"><div>' +
+      '<div class="kk-metric" style="margin-bottom:14px"><span class="kk-fig" data-c="2">' + a.verifiedShare + '%</span>' +
+      '<span class="kk-lab">of recorded figures are verified or connected</span>' +
+      '<span class="kk-note">' + a.verified + ' of ' + a.known + ' measurements</span></div>' +
+      (a.pending ? '<button class="kk-btn sm" data-act="go" data-arg="verify">Review ' + a.pending + ' waiting on evidence</button>' : '') +
+    '</div><div>' + confLegend() + '</div></div>' +
+  '</div></section>';
+}
+
+function survivalCard(lab, s){
+  if(!s.due) return '<div class="kk-metric"><span class="kk-fig unknown">Not due yet</span>' +
+    '<span class="kk-lab">' + lab + ' survival</span><span class="kk-note">' + s.elapsed + ' days since Demo Day</span></div>';
+  return '<div class="kk-metric"><span class="kk-fig" data-c="1">' + pct(s.alive, s.of) + '%</span>' +
+    '<span class="kk-lab">' + lab + ' survival</span>' +
+    '<span class="kk-note">' + s.alive + ' of ' + s.of + ' shipped &middot; ' + (s.of - s.answered) + ' did not report</span></div>';
+}
+function confLegend(){
+  return '<dl class="kk-kv">' + CONF.map(c =>
+    '<dt>' + confMeter(c.n, false) + ' ' + c.name + '</dt><dd class="kk-muted">' + c.desc + '</dd>').join('') + '</dl>';
+}
+
+/* =========================== view: products ========================= */
+function filteredProducts(){
+  return DB.products.filter(p => {
+    const f = state.filters;
+    if(f.cohort !== 'all' && p.cohortId !== f.cohort) return false;
+    if(f.level !== 'all'){
+      if(f.level === 'gap') return Object.values(p.metrics).every(mo => mo.value === null);
+      if(p.level < +f.level) return false;
+    }
+    return true;
+  });
+}
+
+function vProducts(){
+  const list = filteredProducts();
+  const chip = (type, val, label) =>
+    '<button class="kk-chip" data-act="filter" data-arg="' + type + ':' + val + '" aria-pressed="' +
+    (state.filters[type] === val) + '">' + esc(label) + '</button>';
+
+  const rows = list.map(p => {
+    const b = builderOf(p);
+    const u = p.metrics.users, r = p.metrics.revenue;
+    const lastSeen = Object.values(p.metrics).filter(x => x.date).map(x => x.date).sort().pop();
+    return '<tr>' +
+      '<td><button class="kk-linkcell" data-act="go" data-arg="product:' + p.id + '">' + esc(productName(p)) + '</button>' +
+        (p.name ? '' : '<div class="kk-gapcell">record incomplete</div>') + '</td>' +
+      '<td>' + esc(builderName(b)) + '</td>' +
+      '<td class="kk-muted">' + esc(cohortOf(p).name.replace('BNP ','')) + '</td>' +
+      '<td>' + levelPips(p.level) + ' ' + levelPill(p.level) + '</td>' +
+      '<td class="num">' + figure(u, {gapText:'—'}) + '</td>' +
+      '<td class="num">' + figure(r, {format:money, gapText:'—'}) + '</td>' +
+      '<td>' + (u.value !== null ? confMeter(u.conf, false) : '<span class="kk-pill gap">No data</span>') + '</td>' +
+      '<td class="kk-muted">' + (lastSeen ? dtShort(lastSeen) : '—') + '</td>' +
+    '</tr>';
+  }).join('');
+
+  return '' +
+  '<h1 class="kk-h1">Product observatory</h1>' +
+  '<p class="kk-lede">One record for every product a KayKav builder has started, including the ones that stalled. Built is not the same as successful, so nothing here is filtered for flattery.</p>' +
+  '<div class="kk-chips"><div class="kk-chipgroup"><span>Cohort</span>' +
+    chip('cohort','all','All') + chip('cohort','bnp01','Cohort 01') + chip('cohort','bnp02','Cohort 02') +
+  '</div></div>' +
+  '<div class="kk-chips"><div class="kk-chipgroup"><span>Reached at least</span>' +
+    chip('level','all','Any stage') + chip('level','2','Deployed') + chip('level','3','Validated') +
+    chip('level','4','Active') + chip('level','6','Revenue') + chip('level','gap','No data at all') +
+  '</div></div>' +
+  '<div class="kk-tablewrap"><table class="kk-table"><thead><tr>' +
+    '<th>Product</th><th>Builder</th><th>Cohort</th><th>Stage</th>' +
+    '<th class="num">Users</th><th class="num">Revenue</th><th>Evidence</th><th>Last seen</th>' +
+  '</tr></thead><tbody>' + (rows || '<tr><td colspan="8" class="kk-muted">Nothing matches those filters.</td></tr>') +
+  '</tbody></table></div>' +
+  '<p class="kk-sub" style="margin-top:12px">Showing ' + list.length + ' of ' + DB.products.length + ' records. ' +
+  DB.noProduct.length + ' builders have no product recorded at all — see <button class="kk-linkcell" data-act="go" data-arg="gaps">what we don\'t know</button>.</p>';
+}
+
+/* =========================== view: product profile ================== */
+function vProduct(id){
+  const p = byId(DB.products, id);
+  if(!p) return '<p>Record not found.</p>';
+  const b = builderOf(p), c = cohortOf(p);
+  const pend = DB.queue.filter(q => q.productId === p.id && q.status === 'pending');
+
+  const ladder = LEVELS.map(l => {
+    const done = p.level >= l.n, now = p.level === l.n;
+    const cls = 'kk-step ' + (done ? 'done ' : 'todo ') + (now ? 'now ' : '') + (done && l.n >= 5 ? 'gold' : '');
+    return '<div class="' + cls + '"><span class="kk-dot"></span>' +
+      '<span><span class="kk-sname">' + l.name + '</span><span class="kk-sdesc">' + esc(l.desc) + '</span></span>' +
+      '<span class="kk-sdate">' + (p.history[l.n] ? dt(p.history[l.n]) : (done ? '' : '')) + '</span></div>';
+  }).join('');
+
+  const mrow = (k, lab, fn) => {
+    const mo = p.metrics[k];
+    return '<div style="display:flex;justify-content:space-between;gap:16px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--rule2)">' +
+      '<span style="font-size:13.5px">' + lab + '</span>' +
+      '<span style="text-align:right"><span style="font-size:20px">' + figure(mo,{format:fn}) + '</span>' +
+      '<div style="margin-top:3px">' + (mo.value !== null ? confMeter(mo.conf) : '') + '</div>' +
+      (mo.source ? '<div class="kk-note" style="font-size:11.5px;color:var(--ink3)">' + esc(mo.source) + ' &middot; ' + dt(mo.date) + '</div>' : '') +
+      '</span></div>';
+  };
+
+  const timeline = p.timeline.length
+    ? '<div class="kk-tablewrap"><table class="kk-table" style="min-width:0"><thead><tr><th>Window</th><th>Measured</th><th class="num">Users</th><th class="num">Revenue</th></tr></thead><tbody>' +
+      p.timeline.map(t => '<tr><td>' + t.d + ' days</td><td class="kk-muted">' + dt(t.date) + '</td>' +
+      '<td class="num">' + fmt(t.users) + '</td><td class="num">' + money(t.revenue) + '</td></tr>').join('') +
+      '</tbody></table></div>'
+    : '<div class="kk-empty">No check-in has been returned for this product yet, so there is no history to show.</div>';
+
+  return '' +
+  '<button class="kk-back" data-act="go" data-arg="products">← Product observatory</button>' +
+  '<h1 class="kk-h1">' + esc(productName(p)) + '</h1>' +
+  '<p class="kk-lede">' + esc(p.desc || 'No description recorded. This product is known only from the cohort shipping list.') + '</p>' +
+  (p.note ? '<div class="kk-flag"><span>◇</span><div>' + esc(p.note) + '</div></div>' : '') +
+
+  '<div class="kk-grid two">' +
+    '<div class="kk-panel"><h2 class="kk-h2">Where it stands</h2>' +
+      '<p class="kk-sub">A product can move backwards. This ladder records position, not promise.</p>' +
+      '<div class="kk-ladder">' + ladder + '</div></div>' +
+
+    '<div><div class="kk-panel"><h2 class="kk-h2">Identity</h2>' +
+      '<dl class="kk-kv" style="margin-top:10px">' +
+      '<dt>Builder</dt><dd><button class="kk-linkcell" data-act="go" data-arg="builder:' + p.builderId + '">' + esc(builderName(b)) + '</button></dd>' +
+      '<dt>Programme</dt><dd>' + esc(c.name) + '</dd>' +
+      '<dt>Domain</dt><dd>' + (p.domain ? esc(p.domain) : '<span class="kk-gapcell">Not recorded</span>') + '</dd>' +
+      '<dt>Country</dt><dd>' + (p.country ? esc(p.country) : '<span class="kk-gapcell">Not recorded</span>') + '</dd>' +
+      '<dt>Address</dt><dd>' + (p.url ? esc(p.url) : '<span class="kk-gapcell">No live URL on record</span>') + '</dd>' +
+      (p.aka ? '<dt>Also known as</dt><dd>' + esc(p.aka) + '</dd>' : '') +
+      '</dl></div>' +
+
+      '<div class="kk-panel"><h2 class="kk-h2">Traction</h2>' +
+      mrow('users','Users') + mrow('mau','Monthly active') + mrow('paying','Paying customers') +
+      mrow('revenue','Revenue', money) + mrow('mrr','Monthly recurring', money) + mrow('orgs','Organisations served') +
+      '</div></div>' +
+  '</div>' +
+
+  '<section class="kk-section"><h2 class="kk-h2">What it changed</h2>' +
+  '<p class="kk-sub">Each product defines the outcomes that matter in its own domain, rather than being forced into users and revenue.</p>' +
+  (p.impact.length
+    ? '<div class="kk-grid three">' + p.impact.map(i =>
+        '<div class="kk-panel kk-metric"><span class="kk-fig" data-c="' + i.conf + '">' + fmt(i.value) + '</span>' +
+        '<span class="kk-lab">' + esc(i.label) + '</span>' + confMeter(i.conf) + '</div>').join('') + '</div>'
+    : '<div class="kk-empty">No domain impact measures have been defined for this product yet.</div>') +
+  '</section>' +
+
+  '<section class="kk-section"><h2 class="kk-h2">Over time</h2>' +
+  '<p class="kk-sub">Impact is stored as a series, not a single current number.</p>' + timeline + '</section>' +
+
+  '<section class="kk-section"><h2 class="kk-h2">Evidence</h2>' +
+  (pend.length
+    ? '<div class="kk-panel">' + pend.map(q =>
+        '<div class="kk-evidence"><span class="kk-evicon">◷</span><div style="flex:1">' +
+        '<div style="font-weight:500;font-size:13.5px">' + esc(q.claim) + '</div>' +
+        '<div class="kk-muted" style="font-size:12.5px">' + esc(q.evidence) + ' &middot; from ' + esc(q.from) + ' on ' + dt(q.date) + '</div></div>' +
+        '<button class="kk-btn sm ghost" data-act="go" data-arg="verify">Review</button></div>').join('') + '</div>'
+    : '<div class="kk-empty">Nothing is waiting on a reviewer for this product.</div>') +
+  '</section>';
+}
+
+/* =========================== view: builders ========================= */
+function vBuilders(){
+  const rows = DB.builders.map(b => {
+    const ps = productsOf(b.id);
+    const best = ps.length ? Math.max(...ps.map(p => p.level)) : null;
+    const cont = {yes:'<span class="kk-pill blue">Still building</span>',
+                  no:'<span class="kk-pill">Stopped</span>',
+                  unknown:'<span class="kk-pill gap">Unreached</span>'}[b.continuing];
+    return '<tr>' +
+      '<td><button class="kk-linkcell" data-act="go" data-arg="builder:' + b.id + '">' + esc(builderName(b)) + '</button>' +
+        (b.name ? '' : '<div class="kk-gapcell">from cohort shipping list</div>') + '</td>' +
+      '<td class="kk-muted">' + (b.background ? esc(b.background) : '<span class="kk-gapcell">Not recorded</span>') + '</td>' +
+      '<td class="kk-muted">' + (b.country ? esc(b.country) : '<span class="kk-gapcell">—</span>') + '</td>' +
+      '<td class="kk-muted">' + esc(cohortOf(b).name.replace('BNP ','')) + '</td>' +
+      '<td class="num">' + ps.length + '</td>' +
+      '<td>' + (best === null ? '<span class="kk-gapcell">No product recorded</span>' : levelPill(best)) + '</td>' +
+      '<td>' + cont + '</td></tr>';
+  }).join('');
+  const a = agg();
+  return '' +
+  '<h1 class="kk-h1">Builder observatory</h1>' +
+  '<p class="kk-lede">The programme is four weeks. The capability is supposed to outlast it, so every participant keeps a record that continues after Demo Day.</p>' +
+  '<div class="kk-grid three" style="margin-bottom:18px">' +
+    '<div class="kk-panel kk-metric"><span class="kk-fig" data-c="2">' + a.enrolled + '</span><span class="kk-lab">Enrolled</span><span class="kk-note">From programme records</span></div>' +
+    '<div class="kk-panel kk-metric"><span class="kk-fig" data-c="2">' + a.builderRecords + '</span><span class="kk-lab">Records in the system</span><span class="kk-note">' + (a.enrolled - a.builderRecords) + ' still to backfill</span></div>' +
+    '<div class="kk-panel kk-metric"><span class="kk-fig" data-c="1">' + pct(a.continuing, a.builderRecords) + '%</span><span class="kk-lab">Known to still be building</span><span class="kk-note">' + a.contUnknown + ' never responded</span></div>' +
+  '</div>' +
+  '<div class="kk-tablewrap"><table class="kk-table"><thead><tr>' +
+  '<th>Builder</th><th>Background</th><th>Country</th><th>Cohort</th><th class="num">Products</th><th>Furthest stage</th><th>After the programme</th>' +
+  '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+}
+
+function vBuilder(id){
+  const b = byId(DB.builders, id);
+  if(!b) return '<p>Record not found.</p>';
+  const ps = productsOf(b.id);
+  const c = cohortOf(b);
+  const windows = [30,90,180,365].map(w => {
+    const due = DB.checkins.find(x => x.cohortId === b.cohortId && x.window === w);
+    const mine = DB.builderCheckins.find(x => x.builderId === b.id && x.window === w);
+    let st = 'Scheduled', cls = 'gap';
+    if(due && new Date(due.due) <= TODAY){
+      if(mine && mine.status === 'submitted'){ st = 'Returned ' + dt(mine.on); cls = 'blue'; }
+      else if(mine){ st = 'Overdue'; cls = 'gold'; }
+      else { st = 'No response'; cls = 'gap'; }
+    } else st = 'Due ' + dt(due ? due.due : null);
+    return '<div class="kk-gapline"><b>' + w + 'd</b><span class="kk-pill ' + cls + '">' + st + '</span></div>';
+  }).join('');
+
+  return '' +
+  '<button class="kk-back" data-act="go" data-arg="builders">← Builder observatory</button>' +
+  '<h1 class="kk-h1">' + esc(builderName(b)) + '</h1>' +
+  '<p class="kk-lede">' + esc(b.background || 'Background not recorded') +
+  (b.country ? ' &middot; ' + esc(b.country) : '') + ' &middot; ' + esc(c.name) + '</p>' +
+
+  '<div class="kk-grid two">' +
+    '<div class="kk-panel"><h2 class="kk-h2">What they built</h2>' +
+    (ps.length ? ps.map(p =>
+      '<div class="kk-evidence"><span class="kk-evicon">▤</span><div style="flex:1">' +
+      '<button class="kk-linkcell" data-act="go" data-arg="product:' + p.id + '">' + esc(productName(p)) + '</button>' +
+      '<div class="kk-muted" style="font-size:12.5px">' + esc(p.domain || 'Domain not recorded') + '</div></div>' +
+      levelPill(p.level) + '</div>').join('')
+      : '<div class="kk-empty">No product recorded for this builder. They completed the programme, but nothing was entered afterwards.</div>') +
+    '</div>' +
+    '<div class="kk-panel"><h2 class="kk-h2">Check-in history</h2>' +
+    '<p class="kk-sub">Short questions at four points, rather than one long survey at the end.</p>' + windows + '</div>' +
+  '</div>' +
+
+  '<section class="kk-section"><h2 class="kk-h2">Economic outcomes</h2>' +
+  '<p class="kk-sub">Income and opportunities are recorded with how strongly they can be attributed to KayKav. Nothing is claimed as caused by the programme by default.</p>' +
+  (b.continuing === 'yes' && ps.some(p => p.level >= 5)
+    ? '<div class="kk-panel"><dl class="kk-kv">' +
+      '<dt>Product revenue</dt><dd>' + money(ps.reduce((s,p) => s + (p.metrics.revenue.value || 0), 0)) +
+      ' <span class="kk-pill">Partially attributable</span></dd>' +
+      '<dt>Business formed</dt><dd><span class="kk-gapcell">Not reported</span></dd>' +
+      '<dt>Jobs created</dt><dd><span class="kk-gapcell">Not reported</span></dd>' +
+      '</dl></div>'
+    : '<div class="kk-empty">No economic outcome has been reported for this builder.</div>') +
+  '</section>';
+}
+
+/* =========================== view: check-ins ======================== */
+function vCheckins(){
+  const a = agg();
+  const rows = DB.checkins.map(ci => {
+    const c = byId(DB.cohorts, ci.cohortId);
+    const isDue = new Date(ci.due) <= TODAY;
+    const badge = !isDue ? '<span class="kk-pill gap">Scheduled</span>'
+      : ci.returned === ci.expected ? '<span class="kk-pill blue">Complete</span>'
+      : '<span class="kk-pill gold">' + (ci.expected - ci.returned) + ' outstanding</span>';
+    return '<tr><td>' + esc(c.name) + '</td><td>' + ci.window + ' days</td>' +
+      '<td class="kk-muted">' + dt(ci.due) + '</td>' +
+      '<td class="num">' + (isDue ? ci.returned + ' of ' + ci.expected : '—') + '</td>' +
+      '<td class="num">' + (isDue ? pct(ci.returned, ci.expected) + '%' : '—') + '</td>' +
+      '<td>' + badge + '</td></tr>';
+  }).join('');
+
+  return '' +
+  '<h1 class="kk-h1">Check-ins</h1>' +
+  '<p class="kk-lede">Impact is collected in four short passes after Demo Day rather than one long survey. A window that has not come round yet is shown as pending, never as a zero.</p>' +
+  '<div class="kk-grid three" style="margin-bottom:18px">' +
+    '<div class="kk-panel kk-metric"><span class="kk-fig" data-c="2">' + pct(a.checkinReturned, a.checkinExpected) + '%</span>' +
+    '<span class="kk-lab">Response rate so far</span><span class="kk-note">' + a.checkinReturned + ' of ' + a.checkinExpected + ' due</span></div>' +
+    '<div class="kk-panel kk-metric"><span class="kk-fig" data-c="0">' + (a.checkinExpected - a.checkinReturned) + '</span>' +
+    '<span class="kk-lab">Outstanding</span><span class="kk-note">Each one is a hole in the survival figures</span></div>' +
+    '<div class="kk-panel kk-metric"><span class="kk-fig" data-c="2">4</span>' +
+    '<span class="kk-lab">Windows per builder</span><span class="kk-note">30, 90, 180 and 365 days</span></div>' +
+  '</div>' +
+  '<div class="kk-tablewrap"><table class="kk-table"><thead><tr>' +
+  '<th>Cohort</th><th>Window</th><th>Due</th><th class="num">Returned</th><th class="num">Rate</th><th>Status</th>' +
+  '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
+  '<p class="kk-sub" style="margin-top:14px">To see the form a builder receives, switch the view at the top of the page to <b>Builder</b>.</p>';
+}
+
+/* =========================== view: verification ===================== */
+function vVerify(){
+  const pend = DB.queue.filter(q => q.status === 'pending');
+  const done = DB.queue.filter(q => q.status !== 'pending');
+  const card = q => {
+    const p = byId(DB.products, q.productId);
+    const mo = p.metrics[q.metric];
+    return '<div class="kk-panel" style="margin-bottom:12px">' +
+      '<div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start">' +
+        '<div style="flex:1;min-width:230px">' +
+          '<button class="kk-linkcell" data-act="go" data-arg="product:' + p.id + '">' + esc(productName(p)) + '</button>' +
+          '<div style="font-size:15px;font-weight:500;margin:4px 0 2px">' + esc(q.claim) + '</div>' +
+          '<div class="kk-muted" style="font-size:12.5px">Submitted by ' + esc(q.from) + ' on ' + dt(q.date) + '</div>' +
+          '<div class="kk-evidence" style="border:none;padding:10px 0 0"><span class="kk-evicon">◫</span>' +
+          '<div><div style="font-size:13.5px">' + esc(q.evidence) + '</div>' +
+          '<div class="kk-muted" style="font-size:12px">Attached file, opens in a real deployment</div></div></div>' +
+          (q.promotesTo ? '<div class="kk-flag" style="margin:12px 0 0"><span>◈</span><div>Accepting this moves ' +
+            esc(productName(p)) + ' to <b>' + LEVELS[q.promotesTo].name + '</b> and changes the funnel.</div></div>' : '') +
+        '</div>' +
+        '<div style="display:flex;flex-direction:column;gap:8px;min-width:170px">' +
+          '<div class="kk-muted" style="font-size:12px">Currently ' + (mo && mo.value !== null ? CONF[mo.conf].name.toLowerCase() : 'not recorded') + '</div>' +
+          '<button class="kk-btn" data-act="verify" data-arg="' + q.id + '">Accept as verified</button>' +
+          '<button class="kk-btn ghost sm" data-act="more" data-arg="' + q.id + '">Ask for more</button>' +
+          '<button class="kk-btn ghost sm" data-act="reject" data-arg="' + q.id + '">Reject claim</button>' +
+        '</div>' +
+      '</div></div>';
+  };
+
+  return '' +
+  '<h1 class="kk-h1">Verification queue</h1>' +
+  '<p class="kk-lede">Nothing a builder reports is treated as fact until someone here looks at it. Accepting a claim raises its strength everywhere it appears, including the funder dashboard.</p>' +
+  (pend.length ? pend.map(card).join('')
+    : '<div class="kk-empty">Nothing is waiting. New claims arrive here when a builder returns a check-in with evidence attached.</div>') +
+  (done.length ? '<section class="kk-section"><h2 class="kk-h2">Recently decided</h2>' +
+    '<div class="kk-tablewrap"><table class="kk-table" style="min-width:0"><thead><tr><th>Product</th><th>Claim</th><th>Decision</th></tr></thead><tbody>' +
+    done.map(q => '<tr><td>' + esc(productName(byId(DB.products, q.productId))) + '</td><td>' + esc(q.claim) + '</td>' +
+    '<td>' + {verified:'<span class="kk-pill blue">Verified</span>',
+              rejected:'<span class="kk-pill">Rejected</span>',
+              more:'<span class="kk-pill gold">More asked for</span>'}[q.status] + '</td></tr>').join('') +
+    '</tbody></table></div></section>' : '');
+}
+
+function decide(qid, verdict){
+  const q = byId(DB.queue, qid);
+  if(!q || q.status !== 'pending') return;
+  const p = byId(DB.products, q.productId);
+  const mo = p.metrics[q.metric];
+  if(verdict === 'verified'){
+    q.status = 'verified';
+    if(mo) mo.conf = 2;
+    if(mo) mo.source = 'Evidence checked by KayKav';
+    if(mo) mo.date = '2026-09-16';
+    if(q.promotesTo && p.level < q.promotesTo){
+      p.level = q.promotesTo;
+      p.history[q.promotesTo] = '2026-09-16';
+      toast('Verified. ' + productName(p) + ' now sits at ' + LEVELS[q.promotesTo].name + ' and the funnel has moved.');
+    } else {
+      toast('Verified. ' + esc(q.claim) + ' now counts as checked.');
+    }
+  } else if(verdict === 'rejected'){
+    q.status = 'rejected';
+    if(mo) mo.conf = 0;
+    toast('Rejected. The figure stays at self-reported.');
+  } else {
+    q.status = 'more';
+    toast('Sent back to ' + q.from + ' for stronger evidence.');
+  }
+  render();
+}
+
+/* =========================== view: gaps ============================= */
+function gapList(){
+  const a = agg();
+  const out = [];
+  const missingBuilders = a.enrolled - a.builderRecords;
+  if(missingBuilders > 0) out.push({n:missingBuilders, t:'participant records not yet backfilled',
+    d:'Cohort 01 enrolled 32 people. Twelve appear here through the shipping list. The rest exist only in programme records.'});
+  const unnamed = DB.products.filter(p => !p.name).length;
+  if(unnamed) out.push({n:unnamed, t:'products with no name on record',
+    d:'Counted in the shipped total but nothing else is known about them. Each one weakens every downstream figure.'});
+  out.push({n:DB.noProduct.length, t:'builders with no product recorded',
+    d:'They completed Cohort 02 but no product has been entered for them yet.'});
+  const noUsers = DB.products.filter(p => p.level >= 2 && p.metrics.users.value === null).length;
+  out.push({n:noUsers, t:'deployed products with no user data',
+    d:'Deployed is not adopted. Without a figure here, adoption cannot be claimed for these products.'});
+  out.push({n:a.checkinExpected - a.checkinReturned, t:'check-ins outstanding',
+    d:'Every missing response is a product whose survival is unknown rather than zero.'});
+  out.push({n:a.known - a.verified, t:'figures still unverified',
+    d:'Recorded but resting on a claim or unchecked evidence.'});
+  return out;
+}
+function vGaps(){
+  const a = agg();
+  return '' +
+  '<h1 class="kk-h1">What we don\'t know</h1>' +
+  '<p class="kk-lede">A number that is missing is different from a number that is zero. This page exists so the difference is never quietly lost between the two.</p>' +
+  '<div class="kk-panel">' + gapList().map(g =>
+    '<div class="kk-gapline"><b>' + g.n + '</b><div><div style="font-weight:500">' + esc(g.t) + '</div>' +
+    '<div class="kk-muted" style="font-size:12.5px">' + esc(g.d) + '</div></div></div>').join('') + '</div>' +
+  '<section class="kk-section"><h2 class="kk-h2">What this costs us</h2>' +
+  '<div class="kk-panel"><p style="margin:0 0 10px;font-size:14px;max-width:64ch">' +
+  'User totals currently cover ' + a.usersKnownOn + ' of ' + a.products + ' products, so the ' + fmt(a.usersReached) +
+  ' figure is a floor rather than a total. Survival past 90 days cannot be reported at all until Cohort 01 reaches its 180-day window in November.</p>' +
+  '<p style="margin:0;font-size:14px;max-width:64ch">The closing of these gaps is the work, not the dashboard.</p></div></section>';
+}
+
+/* =========================== view: dictionary ======================= */
+const DICT = [
+  ['People trained','Unique participants enrolled on a programme','Programme records','KayKav'],
+  ['Builders','Participants with at least one product past the idea stage','Product records','KayKav'],
+  ['Products built','A functional MVP that can do its core job. No users, revenue or launch required','Builder plus evidence','Evidence'],
+  ['Products deployed','Reachable in a production environment: a live URL, store listing or authenticated instance','Deployment evidence','KayKav'],
+  ['Products validated','A real person outside the build process used it for its intended purpose','Analytics or builder evidence','Evidence'],
+  ['Active products','At least one meaningful user interaction in the previous 30 days','Analytics','Connected or evidence'],
+  ['Users reached','Unique people served by a product','Analytics or database','Connected or evidence'],
+  ['Revenue','Money a real customer paid for the product. Never programme fees, grants or projections','Payment provider','Verified'],
+  ['Businesses formed','An ongoing commercial or organisational operation attributable to the product','Builder report','Evidence'],
+  ['Builder continuation','Builders still creating or maintaining products after the programme','Check-ins','Self-reported'],
+  ['Product survival','Share of shipped products still active after a defined period','Check-ins','Evidence']
+];
+const RULES = [
+  'Every figure carries a source, a date and a strength of evidence.',
+  'A claim is never silently promoted to a verified fact.',
+  'Product revenue is never mixed with programme income.',
+  'A projection is never shown where an outcome belongs.',
+  'Built is never presented as successful.',
+  'A product is allowed to move backwards. That is reality, not a fault in the measurement.',
+  'Every total can be opened to the records underneath it.',
+  'History keeps what was actually known at the time.'
+];
+function vDictionary(){
+  return '' +
+  '<h1 class="kk-h1">Metric dictionary</h1>' +
+  '<p class="kk-lede">Every figure a funder sees has a definition here. If a number cannot be defined in one sentence, it does not belong on the dashboard.</p>' +
+  '<div class="kk-tablewrap"><table class="kk-table"><thead><tr>' +
+  '<th>Metric</th><th>Definition</th><th>Source</th><th>Checked by</th></tr></thead><tbody>' +
+  DICT.map(r => '<tr><td style="font-weight:500">' + esc(r[0]) + '</td><td>' + esc(r[1]) + '</td>' +
+  '<td class="kk-muted">' + esc(r[2]) + '</td><td class="kk-muted">' + esc(r[3]) + '</td></tr>').join('') +
+  '</tbody></table></div>' +
+  '<section class="kk-section"><h2 class="kk-h2">Stages a product passes through</h2>' +
+  '<div class="kk-panel"><div class="kk-ladder">' + LEVELS.map(l =>
+    '<div class="kk-step done' + (l.n >= 5 ? ' gold' : '') + '"><span class="kk-dot"></span>' +
+    '<span><span class="kk-sname">' + l.name + '</span><span class="kk-sdesc">' + esc(l.desc) + '</span></span>' +
+    '<span class="kk-sdate">Level ' + l.n + '</span></div>').join('') + '</div></div></section>' +
+  '<section class="kk-section"><h2 class="kk-h2">Rules the system enforces</h2>' +
+  '<div class="kk-panel">' + RULES.map(r =>
+    '<div class="kk-gapline"><b>·</b><span>' + esc(r) + '</span></div>').join('') + '</div></section>';
+}
+
+/* =========================== view: stories ========================== */
+function vStories(){
+  return '' +
+  '<h1 class="kk-h1">Impact stories</h1>' +
+  '<p class="kk-lede">Numbers set the scale. A story explains what the scale is made of. Each one ends at a figure you can open and check.</p>' +
+  DB.stories.map(s => {
+    const p = byId(DB.products, s.productId);
+    return '<div class="kk-panel" style="margin-bottom:14px">' +
+      '<h2 class="kk-h2">' + esc(s.title) + '</h2>' +
+      '<p class="kk-sub">' + esc(productName(p)) + ' &middot; ' + esc(cohortOf(p).name) +
+      ' &middot; ' + (s.verified ? '<span class="kk-pill blue">All figures verified</span>'
+        : '<span class="kk-pill gold">Contains unverified figures</span>') + '</p>' +
+      '<div class="kk-story"><h4>Before</h4><p>' + esc(s.before) + '</p>' +
+      '<h4>At KayKav</h4><p>' + esc(s.kaykav) + '</p>' +
+      '<h4>Ship</h4><p>' + esc(s.ship) + '</p>' +
+      '<h4>Since</h4><p>' + esc(s.after) + '</p></div>' +
+      '<button class="kk-btn sm ghost" data-act="go" data-arg="product:' + p.id + '">Open the record behind this</button>' +
+    '</div>';
+  }).join('');
+}
+
+/* =========================== view: funder =========================== */
+function vFunder(){
+  const a = agg();
+  const hero = [
+    {k:'trained',  lab:'People trained',        v:fmt(a.enrolled)},
+    {k:'built',    lab:'Products built',        v:fmt(a.built)},
+    {k:'deployed', lab:'Products deployed',     v:fmt(a.deployed)},
+    {k:'validated',lab:'Products with real users', v:fmt(a.validated)},
+    {k:'users',    lab:'People reached',        v:fmt(a.usersReached)},
+    {k:'revenue',  lab:'Verified revenue',      v:money(a.revenueVerified)},
+    {k:'business', lab:'Businesses created',    v:fmt(a.business)},
+    {k:'cont',     lab:'Builders still building', v:fmt(a.continuing)}
+  ];
+  const q = (h, body) => '<details class="kk-q"><summary>' + h + '</summary><div class="kk-qa">' + body + '</div></details>';
+
+  return '' +
+  '<h1 class="kk-h1">KayKav Builder Impact</h1>' +
+  '<p class="kk-lede">KayKav sets out to increase the number of people who can find a real problem, architect a solution and ship it. This is what that has produced so far, including the parts that have not worked yet.</p>' +
+  '<div class="kk-flag"><span>◇</span><div><b>Seeded figures.</b> Enrolment, cohort dates and product names are from programme records. Usage and revenue figures are placeholders for testing this interface.</div></div>' +
+
+  '<div class="kk-grid three">' + hero.map(h =>
+    '<button class="kk-metric" data-act="drill" data-arg="' + h.k + '">' +
+    '<span class="kk-fig" data-c="2">' + h.v + '</span><span class="kk-lab">' + h.lab + '</span>' +
+    '<span class="kk-note">Select to see the records</span></button>').join('') + '</div>' +
+
+  '<section class="kk-section"><h2 class="kk-h2">From training to outcome</h2>' +
+  '<p class="kk-sub">Not every product is meant to become a business. The funnel narrows because that is what happens, not because the earlier stages failed.</p>' +
+  '<div class="kk-panel">' + funnelHTML() + '</div></section>' +
+
+  '<section class="kk-section"><h2 class="kk-h2">The questions you are about to ask</h2>' +
+  '<div class="kk-panel">' +
+    q('How many people has KayKav reached?',
+      '<p>' + a.enrolled + ' people across two cohorts of Built, Not Prompted, in ' + a.cohortCountries +
+      ' countries and 3 continents. Domain Expert Builders has not yet run.</p>') +
+    q('What did they actually create?',
+      '<p>' + a.products + ' product records, of which ' + a.deployed + ' reached a live URL. Five Cohort 01 products are counted in that total but carry no further detail, which is recorded as a gap rather than smoothed over.</p>' +
+      '<button class="kk-btn sm ghost" data-act="go" data-arg="products">Open the product list</button>') +
+    q('Is anyone actually using them?',
+      '<p>' + a.validated + ' products have been used by someone outside the build process and ' + a.active +
+      ' show usage in the last 30 days. Known users total ' + fmt(a.usersReached) + ' across ' + a.usersKnownOn +
+      ' products; the rest have no user data at all, so this is a floor and not a total.</p>') +
+    q('Is there economic value?',
+      '<p>' + money(a.revenueVerified) + ' of product revenue is verified, from ' + a.revenueProducts +
+      ' products. No businesses have been formed yet and no jobs have been reported. Programme income is never counted here.</p>') +
+    q('Does the impact last?',
+      '<div class="kk-grid three">' + survivalCard('30 days', a.survival('bnp01',30)) +
+      survivalCard('90 days', a.survival('bnp01',90)) + survivalCard('180 days', a.survival('bnp01',180)) + '</div>') +
+    q('Can I believe the numbers?',
+      '<p>' + a.verifiedShare + '% of recorded figures have been checked by a reviewer or read from a connected system. Every figure on this page shows its own strength, and the weakest are drawn faintest.</p>' +
+      '<button class="kk-btn sm ghost" data-act="go" data-arg="trust">See how checking works</button>') +
+  '</div></section>' +
+
+  '<section class="kk-section"><h2 class="kk-h2">Where this is honest</h2>' +
+  '<div class="kk-panel">' + gapList().slice(0,4).map(g =>
+    '<div class="kk-gapline"><b>' + g.n + '</b><span>' + esc(g.t) + '</span></div>').join('') +
+  '<p style="margin:14px 0 0;font-size:13.5px;color:var(--ink3);max-width:64ch">KayKav would rather show you the holes than a rounder number.</p></div></section>';
+}
+
+/* =========================== view: trust ============================ */
+function vTrust(){
+  const rows = [];
+  DB.products.forEach(p => Object.entries(p.metrics).forEach(([k, mo]) => {
+    if(mo.value === null) return;
+    rows.push('<tr><td>' + esc(productName(p)) + '</td><td class="kk-muted">' + k + '</td>' +
+      '<td class="num">' + (k === 'revenue' || k === 'mrr' ? money(mo.value) : fmt(mo.value)) + '</td>' +
+      '<td>' + confMeter(mo.conf) + '</td><td class="kk-muted">' + esc(mo.source || '—') + '</td>' +
+      '<td class="kk-muted">' + dtShort(mo.date) + '</td></tr>');
+  }));
+  return '' +
+  '<h1 class="kk-h1">How the numbers are checked</h1>' +
+  '<p class="kk-lede">Four strengths of evidence, shown everywhere a figure appears. A dashboard that hides the difference between a claim and a connected system is not worth reading.</p>' +
+  '<div class="kk-panel">' + confLegend() + '</div>' +
+  '<section class="kk-section"><h2 class="kk-h2">Every recorded figure</h2>' +
+  '<div class="kk-tablewrap"><table class="kk-table"><thead><tr>' +
+  '<th>Product</th><th>Measure</th><th class="num">Value</th><th>Strength</th><th>Source</th><th>Checked</th>' +
+  '</tr></thead><tbody>' + rows.join('') + '</tbody></table></div></section>';
+}
+
+/* =========================== view: public =========================== */
+function vPublic(){
+  const a = agg();
+  const gallery = DB.products.filter(p => p.name && p.level >= 2);
+  return '' +
+  '<div class="kk-public-hero">' +
+    '<h1>People who had never shipped software now have products in the world</h1>' +
+    '<p>KayKav teaches architecture before code. Four weeks later our builders leave with something live. Here is what they made, and what happened next.</p>' +
+    '<div class="kk-public-nums">' +
+      '<div><b>' + a.enrolled + '</b><span>people trained</span></div>' +
+      '<div><b>' + a.cohortCountries + '</b><span>countries</span></div>' +
+      '<div><b>' + a.deployed + '</b><span>products shipped</span></div>' +
+      '<div><b>' + a.active + '</b><span>still active today</span></div>' +
+    '</div>' +
+  '</div>' +
+  '<section class="kk-section"><h2 class="kk-h2">What they built</h2>' +
+  '<p class="kk-sub">Every one of these is a live product made by someone who arrived with a problem rather than a codebase.</p>' +
+  '<div class="kk-gallery">' + gallery.map(p =>
+    '<div class="kk-card"><h5>' + esc(p.name) + '</h5><p>' + esc(p.desc || '') + '</p>' +
+    '<div style="display:flex;gap:6px;flex-wrap:wrap"><span class="kk-pill">' + esc(p.domain || 'General') + '</span>' +
+    '<span class="kk-pill">' + esc(p.country || '') + '</span></div></div>').join('') + '</div></section>' +
+  '<section class="kk-section"><h2 class="kk-h2">Two of their stories</h2>' +
+  DB.stories.map(s => '<div class="kk-panel" style="margin-bottom:12px"><h2 class="kk-h2">' + esc(s.title) + '</h2>' +
+    '<p style="margin:6px 0 0;font-size:14px;max-width:64ch;color:var(--ink2)">' + esc(s.before) + ' ' + esc(s.after) + '</p></div>').join('') +
+  '</section>' +
+  '<hr class="kk-hair">' +
+  '<p class="kk-sub">Personal details and financial figures are not published here. Funders and partners see the full record.</p>';
+}
+
+/* =========================== view: builder ========================== */
+const CHECKIN_Q = [
+  {k:'running', q:'Is your product still running?',
+   help:'Answer honestly. A paused product is useful information, not a failure.',
+   opts:['Still running','Paused','Stopped for good']},
+  {k:'outside', q:'Has anyone outside your immediate circle used it?',
+   help:'Not friends you demoed it to. Someone who used it to get something done.',
+   opts:['Yes','Not yet','Not sure']},
+  {k:'users', q:'How many people have used it in total?',
+   help:'A rough number is fine. Leave it blank if you genuinely do not know.', input:'number'},
+  {k:'paid', q:'Has anyone paid for it?',
+   opts:['Yes','No','Not charging yet']},
+  {k:'building', q:'Have you kept building since Demo Day?',
+   opts:['Yes, this product','Yes, something new','No']},
+  {k:'changed', q:'What has changed since Demo Day?',
+   help:'Two sentences is plenty.', input:'text'},
+  {k:'evidence', q:'Can you attach anything that shows this?',
+   help:'A dashboard screenshot, a payment receipt, an analytics export. Without it your numbers stay at self-reported.',
+   opts:['Attach a screenshot','Connect my analytics','Nothing to attach']}
+];
+
+function vBuilderHome(){
+  const b = byId(DB.builders, state.actingAs);
+  const ps = productsOf(b.id);
+  const mine = DB.builderCheckins.find(x => x.builderId === b.id);
+  const others = DB.builders.filter(x => x.cohortId === 'bnp02');
+
+  if(state.checkin.open) return vCheckinForm(b, ps[0]);
+
+  return '<div style="max-width:660px;margin:0 auto">' +
+  '<div class="kk-chips"><div class="kk-chipgroup"><span>Signed in as</span>' +
+    others.map(o => '<button class="kk-chip" data-act="actas" data-arg="' + o.id + '" aria-pressed="' +
+      (o.id === state.actingAs) + '">' + esc(o.name) + '</button>').join('') + '</div></div>' +
+
+  '<h1 class="kk-h1">Hello ' + esc(b.name) + '</h1>' +
+  '<p class="kk-lede">Six weeks after Demo Day. We ask four short times: at 30 days, 90 days, six months and a year. It takes about two minutes.</p>' +
+
+  (ps.length ? ps.map(p => '<div class="kk-panel" style="margin-bottom:14px">' +
+    '<div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">' +
+    '<div><h2 class="kk-h2">' + esc(productName(p)) + '</h2>' +
+    '<p class="kk-sub" style="margin-bottom:0">' + esc(p.desc || '') + '</p></div>' + levelPill(p.level) + '</div>' +
+    '<div class="kk-ladder" style="margin-top:14px">' + LEVELS.slice(0, Math.max(p.level + 2, 4)).map(l =>
+      '<div class="kk-step ' + (p.level >= l.n ? 'done' : 'todo') + (p.level === l.n ? ' now' : '') + '">' +
+      '<span class="kk-dot"></span><span><span class="kk-sname">' + l.name + '</span></span>' +
+      '<span class="kk-sdate">' + (p.history[l.n] ? dt(p.history[l.n]) : '') + '</span></div>').join('') + '</div>' +
+    '</div>').join('')
+    : '<div class="kk-empty">We have nothing on record for you yet. Your check-in will open the first record.</div>') +
+
+  (mine && mine.status === 'submitted'
+    ? '<div class="kk-panel"><h2 class="kk-h2">Thank you</h2><p class="kk-sub" style="margin-bottom:0">' +
+      'Your 30-day check-in came in on ' + dt(mine.on) + '. The next one is due on 5 November 2026.</p></div>'
+    : '<div class="kk-panel" style="border-color:var(--gold)">' +
+      '<h2 class="kk-h2">Your 30-day check-in is overdue</h2>' +
+      '<p class="kk-sub">It was due on 6 September. Seven questions, and you can skip anything you do not know.</p>' +
+      '<button class="kk-btn gold" data-act="checkin-start">Start the check-in</button></div>') +
+  '</div>';
+}
+
+function vCheckinForm(b, p){
+  const step = state.checkin.step;
+  if(step >= CHECKIN_Q.length) return vCheckinDone(b, p);
+  const Q = CHECKIN_Q[step];
+  const val = state.checkin.draft[Q.k];
+
+  const field = Q.opts
+    ? '<div class="kk-radios">' + Q.opts.map(o =>
+        '<button class="kk-radio" data-act="ci-pick" data-arg="' + Q.k + '::' + o + '" aria-pressed="' +
+        (val === o) + '">' + esc(o) + '</button>').join('') + '</div>'
+    : Q.input === 'number'
+      ? '<input class="kk-input" type="number" min="0" inputmode="numeric" data-k="' + Q.k +
+        '" value="' + (val ?? '') + '" placeholder="e.g. 40">'
+      : '<textarea class="kk-textarea" data-k="' + Q.k + '" placeholder="Since Demo Day…">' + esc(val ?? '') + '</textarea>';
+
+  return '<div style="max-width:620px;margin:0 auto">' +
+    '<button class="kk-back" data-act="checkin-cancel">← Leave the check-in</button>' +
+    '<div class="kk-steps">' + CHECKIN_Q.map((q,i) =>
+      '<span class="kk-stepdot' + (i <= step ? ' on' : '') + '"><b>' + (i + 1) + '</b></span>').join('') +
+      '<span class="kk-stepdot" style="margin-left:6px">' + (step + 1) + ' of ' + CHECKIN_Q.length + '</span></div>' +
+    '<div class="kk-panel">' +
+      '<div class="kk-field"><label>' + esc(Q.q) + '</label>' +
+      (Q.help ? '<div class="kk-help">' + esc(Q.help) + '</div>' : '') + field + '</div>' +
+      '<div style="display:flex;gap:8px">' +
+        (step > 0 ? '<button class="kk-btn ghost" data-act="checkin-back">Back</button>' : '') +
+        '<button class="kk-btn" data-act="checkin-next">' +
+        (step === CHECKIN_Q.length - 1 ? 'Send my check-in' : 'Next') + '</button>' +
+      '</div>' +
+    '</div>' +
+    '<p class="kk-sub" style="margin-top:14px">' + esc(productName(p)) +
+    ' &middot; 30-day check-in &middot; anything you skip is recorded as unknown, never as zero.</p></div>';
+}
+
+function vCheckinDone(b, p){
+  const d = state.checkin.draft;
+  return '<div style="max-width:620px;margin:0 auto">' +
+    '<h1 class="kk-h1">That is all we needed</h1>' +
+    '<p class="kk-lede">Your answers are recorded against ' + esc(productName(p)) + '. Anything you attached evidence for is now with a KayKav reviewer.</p>' +
+    '<div class="kk-panel"><h2 class="kk-h2">What happens to what you sent</h2>' +
+    '<dl class="kk-kv" style="margin-top:10px">' +
+      '<dt>Status</dt><dd>' + esc(d.running || 'not answered') + '</dd>' +
+      '<dt>Users</dt><dd>' + (d.users ? fmt(+d.users) + ' <span class="kk-pill gap">Awaiting review</span>' : '<span class="kk-gapcell">Recorded as unknown</span>') + '</dd>' +
+      '<dt>Paid</dt><dd>' + esc(d.paid || 'not answered') + '</dd>' +
+      '<dt>Still building</dt><dd>' + esc(d.building || 'not answered') + '</dd>' +
+    '</dl></div>' +
+    '<div class="kk-panel"><p style="margin:0;font-size:14px">Switch the view at the top to <b>KayKav team</b> and open the verification queue to see your submission arrive.</p></div>' +
+    '<button class="kk-btn ghost" data-act="checkin-cancel" style="margin-top:14px">Back to my product</button></div>';
+}
+
+function submitCheckin(){
+  const b = byId(DB.builders, state.actingAs);
+  let p = productsOf(b.id)[0];
+  const d = state.checkin.draft;
+  if(!p){
+    p = {id:'p' + Date.now(), name:null, aka:null, builderId:b.id, cohortId:b.cohortId,
+         domain:null, country:b.country, url:null,
+         desc:'Entered from a 30-day check-in. Details still to be collected.',
+         level:1, history:{1:'2026-09-16'},
+         metrics:{users:gap(), mau:gap(), paying:gap(), revenue:gap(), mrr:gap(), orgs:gap()},
+         impact:[], timeline:[]};
+    DB.products.push(p);
+    DB.noProduct = DB.noProduct.filter(x => x.builderId !== b.id);
+  }
+
+  if(d.users){
+    p.metrics.users = {value:+d.users, conf:0, source:'Builder check-in', date:'2026-09-16'};
+    p.timeline.push({d:30, date:'2026-09-16', users:+d.users, revenue:0});
+  }
+  if(d.outside === 'Yes' && p.level < 3){ p.level = 3; p.history[3] = '2026-09-16'; }
+  if(d.running === 'Stopped for good') p.note = 'Builder reported stopping work at the 30-day check-in.';
+  b.continuing = d.building && d.building.startsWith('Yes') ? 'yes' : d.building === 'No' ? 'no' : 'unknown';
+
+  let mine = DB.builderCheckins.find(x => x.builderId === b.id && x.window === 30);
+  if(!mine){
+    mine = {builderId:b.id, productId:p.id, window:30, due:'2026-09-06', status:'overdue'};
+    DB.builderCheckins.push(mine);
+  }
+  if(mine.status !== 'submitted'){
+    mine.status = 'submitted'; mine.on = '2026-09-16';
+    const ci = DB.checkins.find(x => x.cohortId === b.cohortId && x.window === 30);
+    if(ci) ci.returned += 1;
+  }
+  if(d.evidence && d.evidence !== 'Nothing to attach' && d.users){
+    DB.queue.unshift({id:'q' + Date.now(), productId:p.id, metric:'users',
+      claim:fmt(+d.users) + ' users reported at the 30-day check-in',
+      evidence:d.evidence === 'Connect my analytics' ? 'Analytics connection requested' : 'Screenshot attached by the builder',
+      from:b.name, date:'2026-09-16', status:'pending'});
+  }
+  state.checkin.step = CHECKIN_Q.length;
+  toast('Check-in received. Thank you.');
+  render();
+}
+
+/* =========================== drill-downs ============================ */
+function drill(key){
+  const a = agg();
+  const table = (head, rows) => '<div class="kk-tablewrap"><table class="kk-table" style="min-width:0">' +
+    '<thead><tr>' + head.map(h => '<th>' + h + '</th>').join('') + '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+  const plist = (arr, extra) => table(['Product','Stage', extra ? extra[0] : 'Cohort'],
+    arr.map(p => '<tr><td><button class="kk-linkcell" data-act="go" data-arg="product:' + p.id + '">' +
+      esc(productName(p)) + '</button></td><td>' + levelPill(p.level) + '</td><td class="kk-muted">' +
+      (extra ? extra[1](p) : cohortOf(p).name.replace('BNP ','')) + '</td></tr>').join(''));
+
+  const P = DB.products;
+  const map = {
+    trained:   () => ['People trained', a.enrolled + ' enrolled across ' + DB.cohorts.filter(c => c.enrolled).length + ' cohorts',
+      table(['Cohort','Ran','Enrolled','Records held'], DB.cohorts.filter(c => c.enrolled).map(c =>
+        '<tr><td>' + esc(c.name) + '</td><td class="kk-muted">' + dtShort(c.start) + '</td>' +
+        '<td>' + c.enrolled + '</td><td>' + c.recorded + '</td></tr>').join('')) +
+      '<p class="kk-sub" style="margin-top:12px">Cohort 01 holds 12 of 32 participant records. The remaining 20 sit in programme records and have not been backfilled.</p>'],
+    builders:  () => ['Builders', 'Records with at least one product past the idea stage',
+      table(['Builder','Cohort','Products'], DB.builders.filter(b => productsOf(b.id).some(p => p.level >= 1)).map(b =>
+        '<tr><td><button class="kk-linkcell" data-act="go" data-arg="builder:' + b.id + '">' + esc(builderName(b)) +
+        '</button></td><td class="kk-muted">' + cohortOf(b).name.replace('BNP ','') + '</td><td>' + productsOf(b.id).length + '</td></tr>').join(''))],
+    built:     () => ['Products built', 'A functional MVP exists', plist(P.filter(p => p.level >= 1))],
+    deployed:  () => ['Products deployed', 'Reachable on a live URL', plist(P.filter(p => p.level >= 2), ['Address', p => p.url || '<span class="kk-gapcell">none on record</span>'])],
+    validated: () => ['Used by a real person', 'Level 3 and above', plist(P.filter(p => p.level >= 3))],
+    active:    () => ['Active products', 'Usage in the last 30 days', plist(P.filter(p => p.level >= 4))],
+    traction:  () => ['Products with traction', 'Sustained or growing adoption', plist(P.filter(p => p.level >= 5))],
+    revenue:   () => ['Revenue', money(a.revenueVerified) + ' verified of ' + money(a.revenueTotal) + ' reported',
+      table(['Product','Revenue','Strength'], P.filter(p => p.metrics.revenue.value > 0).map(p =>
+        '<tr><td><button class="kk-linkcell" data-act="go" data-arg="product:' + p.id + '">' + esc(productName(p)) +
+        '</button></td><td>' + money(p.metrics.revenue.value) + '</td><td>' + confMeter(p.metrics.revenue.conf) + '</td></tr>').join('')) +
+      '<p class="kk-sub" style="margin-top:12px">Programme fees, sponsorship and grants are never counted here.</p>'],
+    business:  () => ['Businesses', 'None yet',
+      '<div class="kk-empty">No product has yet become an ongoing commercial operation. Showing a zero here is the point: the funnel is not padded at the bottom.</div>'],
+    users:     () => ['People reached', fmt(a.usersReached) + ' known across ' + a.usersKnownOn + ' of ' + a.products + ' products',
+      table(['Product','Users','Strength'], P.filter(p => p.metrics.users.value !== null).map(p =>
+        '<tr><td><button class="kk-linkcell" data-act="go" data-arg="product:' + p.id + '">' + esc(productName(p)) +
+        '</button></td><td>' + fmt(p.metrics.users.value) + '</td><td>' + confMeter(p.metrics.users.conf) + '</td></tr>').join('')) +
+      '<p class="kk-sub" style="margin-top:12px">' + (a.products - a.usersKnownOn) + ' products have no user figure at all, so this total is a floor.</p>'],
+    cont:      () => ['Builders still building', a.continuing + ' confirmed, ' + a.contUnknown + ' never reached',
+      table(['Builder','After the programme'], DB.builders.map(b =>
+        '<tr><td>' + esc(builderName(b)) + '</td><td>' +
+        ({yes:'<span class="kk-pill blue">Still building</span>', no:'<span class="kk-pill">Stopped</span>',
+          unknown:'<span class="kk-pill gap">Unreached</span>'})[b.continuing] + '</td></tr>').join(''))]
+  };
+  const f = map[key];
+  if(!f) return;
+  const [t, s, body] = f();
+  openDrawer(esc(t), esc(s), body);
+}
+
+/* =========================== router ================================= */
+function render(){
+  const r = state.route;
+  let inner = '';
+  if(state.mode === 'public')      inner = vPublic();
+  else if(state.mode === 'builder')inner = vBuilderHome();
+  else if(r.name === 'product')    inner = vProduct(r.id);
+  else if(r.name === 'builder')    inner = vBuilder(r.id);
+  else inner = ({
+    overview:vOverview, products:vProducts, builders:vBuilders, checkins:vCheckins,
+    verify:vVerify, stories:vStories, gaps:vGaps, dictionary:vDictionary,
+    funder:vFunder, trust:vTrust
+  }[r.name] || vOverview)();
+  $('#app').innerHTML = shell(inner);
+  window.scrollTo({top:0});
+}
+
+function go(arg){
+  const [name, id] = arg.split(':');
+  state.route = {name, id};
+  closeDrawer();
+  render();
+}
+
+/* =========================== events ================================= */
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-act]');
+  if(!t) return;
+  const act = t.dataset.act, arg = t.dataset.arg;
+
+  if(act === 'mode'){
+    state.mode = arg;
+    state.route = {name: arg === 'funder' ? 'funder' : 'overview'};
+    state.checkin = {open:false, step:0, draft:{}};
+    closeDrawer(); render();
+  }
+  else if(act === 'go') go(arg);
+  else if(act === 'drill') drill(arg);
+  else if(act === 'closedrawer') closeDrawer();
+  else if(act === 'theme'){
+    const cur = document.documentElement.getAttribute('data-theme');
+    const isDark = cur ? cur === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  }
+  else if(act === 'filter'){
+    const [k, v] = arg.split(':');
+    state.filters[k] = v; render();
+  }
+  else if(act === 'verify')  decide(arg, 'verified');
+  else if(act === 'reject')  decide(arg, 'rejected');
+  else if(act === 'more')    decide(arg, 'more');
+  else if(act === 'actas'){ state.actingAs = arg; state.checkin = {open:false, step:0, draft:{}}; render(); }
+  else if(act === 'checkin-start'){ state.checkin = {open:true, step:0, draft:{}}; render(); }
+  else if(act === 'checkin-cancel'){ state.checkin = {open:false, step:0, draft:{}}; render(); }
+  else if(act === 'ci-pick'){
+    const i = arg.indexOf('::');
+    state.checkin.draft[arg.slice(0, i)] = arg.slice(i + 2);
+    render();
+  }
+  else if(act === 'checkin-back'){ state.checkin.step = Math.max(0, state.checkin.step - 1); render(); }
+  else if(act === 'checkin-next'){
+    const inp = document.querySelector('[data-k]');
+    if(inp) state.checkin.draft[inp.dataset.k] = inp.value;
+    if(state.checkin.step === CHECKIN_Q.length - 1) submitCheckin();
+    else { state.checkin.step++; render(); }
+  }
+});
+$('#scrim').addEventListener('click', closeDrawer);
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeDrawer(); });
+
+render();
+</script>
+
+</body>
+</html>
