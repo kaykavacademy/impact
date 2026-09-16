@@ -11,8 +11,12 @@ may have already read.
   below), and the two hardcoded prose spots (funder view "3 continents"; builder
   view "due on 6 September" / "5 November 2026").
 
-Everything under `metrics:` is placeholder outcome data and was **not** touched.
-No figure in this document has been copied into a `metrics:` field.
+Everything under `metrics:` is placeholder outcome data. The first pass changed
+nothing there. The second pass recorded exactly one outcome — DDT's paying
+customer — after the owner confirmed they had verified it, and left the amount
+as a gap because no source states one. Nothing else under `metrics:` has been
+altered, and no figure has been lifted from the site into a `metrics:` field
+on the strength of the site alone.
 
 ## Sources
 
@@ -41,8 +45,8 @@ prototype was left alone and the silence recorded.
 
 | # | Claim | Source value | Where in source | Prototype value | Agree? |
 |---|---|---|---|---|---|
-| 1 | Students across the cohorts | 150 | §04 Proof, `data-count="150"` | 40 (32 + 8) | **No** — (a) |
-| 2 | Countries | 7 | §04 Proof, `data-count="7"` | 6 (Nigeria, US, UK, Canada, Sweden, Ireland) | **No** — (a) |
+| 1 | Students across the cohorts | 150 | §04 Proof, `data-count="150"` | 150 (142 + 8) — **corrected 16 Sep**, was 40 | Yes |
+| 2 | Countries | 7 | §04 Proof, `data-count="7"` | 6 (Nigeria, US, UK, Canada, Sweden, Ireland) | **No** — (a), still held |
 | 3 | Continents | 3 | §04 Proof, "Countries, 3 continents" | 3 (`bnp01.continents`) | Yes |
 | 4 | Continents (funder prose) | 3 | as above | "3 continents", `index.html:1305` | Yes |
 | 5 | Live products across the cohorts | 70+ | §04 Proof, `data-count="70"` | 17 deployed of 18 records | **No** — (c) |
@@ -57,52 +61,57 @@ prototype was left alone and the silence recorded.
 | 14 | Session counts | **Silent** — "every session" but no count | §08 | 9 per BNP cohort | Left as is |
 | 15 | Cohort names | **Silent** | — | BNP Cohort 01/02, DEB Cohort 01 | Left as is |
 | 16 | Builder-view dates ("due on 6 September", "5 November 2026") | **Silent** | — | `index.html:1429`, `:1432` | Left as is |
-| 17 | Product — Precision | `tryprecisioncare.com`, "Care coordination product", "health workflow tool" | §04 | `precision-ops.com`, Professional services, "Scoping and estimate builder for a small consulting practice" | **No** — (a), held |
+| 17 | Product — Precision | `tryprecisioncare.com`, "Care coordination product", "health workflow tool" | §04 | `tryprecisioncare.com`, Healthcare, "A health workflow tool for care coordination." — **corrected 16 Sep** | Yes |
 | 18 | Product — DraftDesk | `draftdesk.online`, "Drafting and document workspace" | §04 | `draftdesk.legal`, Legal | **No** — (a), fixed |
 | 19 | Product — Wandar | `wandar.co`, "Travel itinerary planning" | §04 | `wandar.travel`, Travel | **No** — (a), fixed |
 | 20 | Product — DDT | "DDT" / "Don't Destroy the Structure", non-destructive testing | §04 | name `DDT Structure`, `aka` empty | **No** — (a), fixed |
 | 21 | Product — Oneflute | `theoneflute.vercel.app`, "AI-assisted PR and creator marketing platform" | §04 | absent from `DB.products` | **No** — (a), held |
-| 22 | DDT commercial outcome | "his employer subscribed for a year" | §04 | `p05.metrics.paying` and `.revenue` both `gap()` (unknown) | **No** — (c) |
+| 22 | DDT commercial outcome | "his employer subscribed for a year" | §04 | `paying: 1` at confidence 2 (KayKav verified), level raised to 6 Revenue — **recorded 16 Sep**; `revenue` amount still a gap | Partly |
 | 23 | Precision delivery claim | "shipped by a non-engineer in four weeks" | §04 | `p04` level 2, `users: gap('No check-in returned')` | **No** — (c) |
 | 24 | All named products live | "every one is on a real URL today" | §04 | 4 of 5 present and deployed; Oneflute absent | **No** — (c) |
 | 25 | Other prototype products (Nestly, BitePlan, Ideas Journal, Herd, Shelfy, ClinicQueue, Storyseed, SiteLog, PayRoute) | **Silent** — site lists "Selected products", not an exhaustive set | §04 | 9 named records | Left as is |
 
 ## (a) Prototype is wrong — source is authoritative
 
-Four of these were applied. Three are **held**, because closing them would mean
-inventing a value the source does not supply, which the brief forbids.
+Five of these have been applied. Two remain **held**, because closing them would
+mean inventing a value no source supplies.
 
 | # | Item | Change | Applied? |
 |---|---|---|---|
 | 19 | Wandar URL | `wandar.travel` → `wandar.co` | **Applied** |
 | 18 | DraftDesk URL | `draftdesk.legal` → `draftdesk.online` | **Applied** |
 | 20 | DDT name | `name: 'DDT Structure'` → `name: 'DDT'`, `aka: 'Don't Destroy the Structure'` | **Applied** |
-| 1 | Enrolment 150 vs 40 | — | **Held** |
+| 1 | Enrolment 150 vs 40 | `bnp01.enrolled` 32 → 142, giving 142 + 8 = 150 | **Applied**, on an assumption — see below |
+| 17 | Precision identity | url → `tryprecisioncare.com`, domain → Healthcare, desc → "A health workflow tool for care coordination." | **Applied** |
 | 2 | 7 countries vs 6 | — | **Held** |
-| 17 | Precision identity | — | **Held** |
 | 21 | Oneflute missing | — | **Held** |
 
-Why the four are held:
+**Enrolment — the assumption behind the split.** The owner confirmed the total
+should read 150 to match the site. The site gives only a cross-cohort total and
+no per-cohort split, so one had to be chosen. `bnp02` was left at 8: it has eight
+named builder records, all marked recorded, and is described in the seed data as
+"the first cohort capturing impact data from day one". The entire remainder was
+therefore assigned to `bnp01`, which is the cohort carrying the backfill gap:
 
-- **Enrolment (150 vs 40).** The source gives only a cross-cohort total, with no
-  per-cohort split, so there is no non-invented way to update `bnp01.enrolled`
-  and `bnp02.enrolled`. The scope also differs: the prototype's 32 + 8 is
-  described in the seed data as programme records with "20 participant records
-  still to be backfilled", whereas "150 students across the cohorts" may count a
-  wider population than the two BNP cohorts the prototype models — the same
-  section separately cites "1000+ students learning to solve problems with AI",
-  so the site clearly counts more than one population. **Someone has to decide
-  what 150 covers, and what the per-cohort split is.**
-- **Countries (7 vs 6).** The source states the count but never lists the
-  countries, so the seventh cannot be identified. The prototype's list is
-  explicit and drives the aggregate. **Someone has to name the missing country.**
-- **Precision.** The name matches but nothing else does: the source has a care
-  coordination / health product at `tryprecisioncare.com`; the prototype has a
-  consulting scoping tool at `precision-ops.com`. Correcting only the URL would
-  produce an incoherent record (a health URL on a consulting description), and
-  correcting the description and domain as well goes beyond the fields in scope
-  — and would be wrong outright if these are two different products that share a
-  name. **Someone has to confirm whether these are the same product.**
+- `bnp01.enrolled` 32 → **142**, `recorded` unchanged at 12
+- `bnp01.note` updated from "20 participant records still to be backfilled" to
+  **130**, which is what 142 − 12 now implies
+
+The consequence is deliberate and visible: the prototype now shows 150 trained
+against 20 builder records, so "What we don't know" reports 130 missing
+participant records. That is the tool behaving as intended — the gap is stated
+rather than smoothed — but it is a much larger gap than before, and if 150
+actually spans more than the two BNP cohorts the prototype models, the split
+above is the thing to revisit first.
+
+Why the two remaining items are held:
+
+- **Countries (7 vs 6).** The owner identified the missing country as Sweden,
+  but Sweden is already in `bnp01.countries` and already counted in the six
+  (it is the country on the Ideas Journal record). Adding it again changes
+  nothing, and naming a different country would be invention. The source states
+  the number 7 but never lists the countries, so the seventh is still
+  unidentified. **This one still needs a name.**
 - **Oneflute.** The source names it as live on a real URL; the prototype has no
   such record. Adding one would require inventing a `builderId`, `cohortId`,
   `level` and history, none of which the source provides.
@@ -126,22 +135,47 @@ independent check on them. A genuine deck-vs-site comparison has not been done.
 
 ## (c) Source claims an outcome the prototype records as unknown
 
-None of these were applied. They are outcome claims, and every one of them lands
-on a `metrics:` field the brief puts out of bounds. They are listed so the
-difference is visible, not so it can be closed.
+One of these (item 22) has since been verified by the owner and recorded. The
+rest remain open: they are outcome claims, and closing them means producing
+evidence, not editing a seed value.
 
-| # | Source claim | Prototype record |
+| # | Source claim | Prototype record | Status |
+|---|---|---|---|
+| 5 | "70+ live products across the cohorts" | 17 of 18 product records reached a live URL | Open |
+| 6 | "1000+ students learning to solve problems with AI" | no equivalent metric exists | Open |
+| 22 | DDT: "his employer subscribed for a year" | `paying: 1` at confidence 2 (KayKav verified); product raised to level 6, Revenue | **Resolved** |
+| 23 | Precision: "shipped by a non-engineer in four weeks" | `p04` is level 2 with `users: gap('No check-in returned')` | Open |
+| 24 | "every one is on a real URL today" (5 named products) | 4 present and deployed; Oneflute has no record at all | Open |
+
+**How item 22 was closed.** The owner confirmed they had verified the DDT
+subscription, so it was entered at confidence 2, "KayKav verified — a KayKav
+reviewer has checked the evidence and accepted it", and the product moved from
+level 5 to level 6 (Revenue: "at least one real customer has paid"). The funnel's
+revenue-generating count therefore moves from 1 to 2.
+
+What was deliberately **not** recorded is the amount. The source says only that
+the employer "subscribed for a year" and gives no figure, so `revenue` and `mrr`
+remain gaps, now carrying the reason "Subscription confirmed, amount not
+disclosed" rather than the default "Not collected yet". A revenue number would
+have had to be invented, and the one rule that has held throughout this
+reconciliation is that a gap is preferable to a fabricated figure.
+
+## Revision log
+
+**Pass 1 — 16 September 2026.** Compared all 25 claims. Applied three product
+corrections (Wandar URL, DraftDesk URL, DDT name and aka). Held four items that
+could not be settled without inventing a value.
+
+**Pass 2 — 16 September 2026.** The owner resolved three of the four held items:
+
+| Item | Owner's instruction | Outcome |
 |---|---|---|
-| 5 | "70+ live products across the cohorts" | 17 of 18 product records reached a live URL |
-| 6 | "1000+ students learning to solve problems with AI" | no equivalent metric exists |
-| 22 | DDT: "his employer subscribed for a year" | `p05.metrics.paying` and `.revenue` are both `gap()` — unknown, unverified |
-| 23 | Precision: "shipped by a non-engineer in four weeks" | `p04` is level 2 with `users: gap('No check-in returned')` |
-| 24 | "every one is on a real URL today" (5 named products) | 4 present and deployed; Oneflute has no record at all |
+| Enrolment | Set the total to 150 to match the site | Applied as 142 + 8; the split is an assumption, documented under (a) |
+| Precision | Correct it to what the source shows | Applied — URL, domain and description |
+| DDT | "I have verified it" | Applied — `paying: 1` at confidence 2, level raised to 6; amount left as a gap |
+| Countries | The missing country is Sweden | **Not applied** — Sweden is already in the list and already counted; the seventh country is still unidentified |
 
-Item 22 is the sharpest: the site states a paying commercial outcome for DDT,
-while the prototype's verification queue treats DDT's revenue as never
-collected. Both cannot be right. Resolving it means producing the evidence and
-running it through the queue, not editing the seed value.
+One item, Oneflute, was not raised and remains held.
 
 ## Incidental observation (not source-driven)
 
