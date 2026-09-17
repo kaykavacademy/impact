@@ -192,6 +192,8 @@ table.kk-table{border-collapse:collapse;width:100%;min-width:660px;font-size:13.
 .kk-table td{padding:11px 14px;border-bottom:1px solid var(--rule2);vertical-align:middle}
 .kk-table tr:last-child td{border-bottom:none}
 .kk-table tbody tr:hover{background:var(--surface2)}
+.kk-rowlink{cursor:pointer}
+.kk-rowlink:hover,.kk-rowlink:focus-within{background:var(--surface2)}
 .kk-table .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .kk-linkcell{font-weight:500;color:var(--blue-ink);text-align:left}
 .kk-linkcell:hover{text-decoration:underline}
@@ -872,10 +874,10 @@ function vProducts(){
     const b = builderOf(p);
     const u = p.metrics.users, r = p.metrics.revenue;
     const lastSeen = Object.values(p.metrics).filter(x => x.date).map(x => x.date).sort().pop();
-    return '<tr>' +
+    return '<tr class="kk-rowlink" data-act="go" data-arg="product:' + p.id + '">' +
       '<td><button class="kk-linkcell" data-act="go" data-arg="product:' + p.id + '">' + esc(productName(p)) + '</button>' +
         (p.name ? '' : '<div class="kk-gapcell">record incomplete</div>') + '</td>' +
-      '<td>' + esc(builderName(b)) + '</td>' +
+      '<td>' + (b ? '<button class="kk-linkcell" data-act="go" data-arg="builder:' + b.id + '">' + esc(builderName(b)) + '</button>' : esc(builderName(b))) + '</td>' +
       '<td class="kk-muted">' + esc(cohortOf(p).name.replace('BNP ','')) + '</td>' +
       '<td>' + levelPips(p.level) + ' ' + levelPill(p.level) + '</td>' +
       '<td class="num">' + figure(u, {gapText:'—'}) + '</td>' +
