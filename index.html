@@ -412,6 +412,26 @@ table.kk-table{border-collapse:collapse;width:100%;min-width:660px;font-size:13.
   .kk-search input{width:100%}
 }
 
+/* ---------- v2: vertical timeline ---------- */
+.kk-tl{list-style:none;margin:0;padding:0;position:relative}
+.kk-tl::before{content:"";position:absolute;left:5px;top:9px;bottom:9px;width:1px;background:var(--rule)}
+.kk-tl li{position:relative;padding:0 0 16px 24px;display:grid;
+  grid-template-columns:1fr auto;gap:4px 14px;align-items:baseline}
+.kk-tl li:last-child{padding-bottom:0}
+.kk-tl li::before{content:"";position:absolute;left:0;top:6px;width:11px;height:11px;border-radius:50%;
+  background:var(--surface);border:2px solid var(--rule);box-sizing:border-box}
+.kk-tl li.on::before{background:var(--blue);border-color:var(--blue)}
+.kk-tl li.gold::before{background:var(--gold);border-color:var(--gold)}
+.kk-tl li.off::before{background:var(--c0);border-color:var(--c0);border-style:dashed}
+.kk-tl .ev{font-size:14px;font-weight:500;color:var(--ink);min-width:0}
+.kk-tl .dte{font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums;white-space:nowrap}
+.kk-tl .src{grid-column:1/-1;font-size:12px;color:var(--ink3);margin-top:-2px}
+.kk-tlmore{margin-top:14px;padding-top:13px;border-top:1px solid var(--rule2)}
+@media (max-width:520px){
+  .kk-tl li{grid-template-columns:1fr}
+  .kk-tl .dte{grid-column:1;margin-top:1px}
+}
+
 /* ---------- v2: misc ---------- */
 .kk-eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin:0 0 8px}
 .kk-grid.four{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
@@ -1867,17 +1887,10 @@ function vBuilder(id){
   const cs = sel.checkinsOf(id).filter(c => c.status !== 'NOT_DUE');
   const evs = DB.evidence.filter(x => x.participantId === id);
 
-  const timeline = [];
-  if(e){
-    timeline.push({d:e.enrolmentDate, t:'Joined ' + sel.cohort(e.cohortId).name, s:'Programme record'});
-    if(e.completionDate) timeline.push({d:e.completionDate, t:'Completed the programme', s:'Programme record'});
-    else timeline.push({d:null, t:e.completionStatus === 'WITHDRAWN' ? 'Withdrew' : 'Did not complete', s:'Programme record'});
-  }
-  ps.forEach(p => sel.history(p.id).forEach(h =>
-    timeline.push({d:h.effectiveDate, t:STATUS_META[h.status].label + ' — ' + productName(p), s:h.source.replace(/_/g,' ').toLowerCase()})));
-  const lc = sel.lastCheckin(id);
-  if(lc) timeline.push({d:lc.completedDate, t:'Returned the ' + lc.type.replace('_',' ').toLowerCase() + ' check-in', s:'Impact check-in'});
-  timeline.sort((a,b) => (a.d || '9999').localeCompare(b.d || '9999'));
+  const timeline = builderTimeline(id);
+  const SHOWN = 4;                          // the tail is what a reader wants first
+  const recent = timeline.slice(-SHOWN);
+  const hidden = timeline.length - recent.length;
 
   return '<button class="kk-back" data-act="go" data-arg="builders">← Builder Observatory</button>' +
     '<h1 class="kk-h1">' + esc(participantName(pa)) + '</h1>' +
@@ -1915,11 +1928,15 @@ function vBuilder(id){
         : emptyState('No outcome recorded yet','Neither a positive nor a negative outcome has been captured for this builder. That is a gap, not a zero.')) +
     '</section>' +
 
-    '<section class="kk-section"><h2 class="kk-h2">Timeline</h2><div class="kk-panel"><div class="kk-steps">' +
-      timeline.map(t => '<div class="kk-step"><span class="kk-stepdot"></span><span>' + esc(t.t) +
-        '<small class="kk-muted"> · ' + esc(t.s) + '</small></span>' +
-        '<span class="kk-sdate">' + (t.d ? dt(t.d) : '—') + '</span></div>').join('') +
-    '</div></div></section>' +
+    '<section class="kk-section"><h2 class="kk-h2">Timeline</h2>' +
+      '<p class="kk-sub">' + (hidden > 0
+        ? 'The ' + recent.length + ' most recent events of ' + timeline.length + '.'
+        : 'The full journey, oldest first.') + '</p>' +
+      '<div class="kk-panel">' + timelineHTML(recent) +
+      (hidden > 0
+        ? '<div class="kk-tlmore"><button class="kk-btn ghost sm" data-act="timeline" data-arg="' + id + '">' +
+          'Show full timeline \u00b7 ' + timeline.length + ' events</button></div>' : '') +
+    '</div></section>' +
 
     '<section class="kk-section"><h2 class="kk-h2">Check-ins</h2>' +
       (cs.length ? table(['Window','Due','Status','Returned'], cs.map(c =>
@@ -1933,6 +1950,35 @@ function vBuilder(id){
       (evs.length ? '<div class="kk-panel">' + evs.map(evRow).join('') + '</div>'
         : emptyState('No evidence on file','Nothing has been submitted for this builder yet.')) +
     '</section>';
+}
+
+// One vertical timeline, used inline (truncated) and in the drawer (full).
+function timelineHTML(events){
+  return '<ol class="kk-tl">' + events.map(e =>
+    '<li class="' + (e.tone || 'on') + '">' +
+      '<span class="ev">' + esc(e.t) + '</span>' +
+      '<span class="dte">' + (e.d ? dt(e.d) : '\u2014') + '</span>' +
+      (e.s ? '<span class="src">' + esc(e.s) + '</span>' : '') +
+    '</li>').join('') + '</ol>';
+}
+
+// The builder's journey, oldest first. Shared by the profile and the drawer.
+function builderTimeline(id){
+  const e = sel.enrolmentOf(id), out = [];
+  if(e){
+    out.push({d:e.enrolmentDate, t:'Joined ' + sel.cohort(e.cohortId).name, s:'Programme record'});
+    if(e.completionDate) out.push({d:e.completionDate, t:'Completed the programme', s:'Programme record'});
+    else out.push({d:null, t:e.completionStatus === 'WITHDRAWN' ? 'Withdrew from the programme' : 'Did not complete the programme',
+                   s:'Programme record', tone:'off'});
+  }
+  sel.productsOf(id).forEach(p => sel.history(p.id).forEach(h =>
+    out.push({d:h.effectiveDate, t:STATUS_META[h.status].label + ' — ' + productName(p),
+      s:h.source.replace(/_/g,' ').toLowerCase() + (h.notes ? ' · ' + h.notes : ''),
+      tone:OFF_STATUS.includes(h.status) ? 'off' : (STATUS_META[h.status].n >= 6 ? 'gold' : 'on')})));
+  sel.checkinsOf(id).filter(c => c.completedDate).forEach(c =>
+    out.push({d:c.completedDate, t:'Returned the ' + c.type.replace('_',' ').toLowerCase() + ' check-in',
+      s:'Impact check-in'}));
+  return out.sort((a,b) => (a.d || '9999').localeCompare(b.d || '9999'));
 }
 
 function evRow(ev){
@@ -2735,6 +2781,11 @@ document.addEventListener('click', e => {
   else if(act === 'resetfilters'){
     state.filters = {programme:'all', cohort:'all', period:'all', verification:'all', domain:'all', status:'all'};
     render();
+  }
+  else if(act === 'timeline'){
+    const pa = sel.participant(arg), tl = builderTimeline(arg);
+    openDrawer('Timeline', esc(participantName(pa)) + ' \u00b7 ' + tl.length + ' events, oldest first',
+      timelineHTML(tl));
   }
   else if(act === 'checkin') checkinDetail(arg);
   else if(act === 'claim')   claimDetail(arg);
