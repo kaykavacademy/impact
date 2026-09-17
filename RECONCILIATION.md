@@ -255,6 +255,34 @@ Two things were deliberately **not** changed:
   enrolment across cohorts did not quietly invent new country reach. The
   prototype still shows 6 countries against the site's 7 (claim 2, still open).
 
+## Pass 5 — businesses (17 September 2026)
+
+The Businesses tile read 1 while its drill-down said "None yet". The drill was
+hardcoded to the empty state and never consulted the data, so it had been
+contradicting the funnel since the seed was added. It now lists the actual
+level-7 records, and still shows the honest empty state when there are none.
+The funder answer had the same problem — it asserted "No businesses have been
+formed yet" as fixed text — and is now computed.
+
+Two products were raised to level 7, Business:
+
+| Product | Why it carries the stage |
+|---|---|
+| BitePlan | 24 paying customers, $1,980 revenue, $180 MRR and 9 practices, all at confidence 3 read from Paystack and PostHog — the strongest record in the set |
+| DDT | Employer annual subscription verified in pass 2, plus six engineering firms on the register at confidence 2 |
+
+The generated level-7 record was moved down to level 6 so that Businesses is
+exactly these two named products rather than a synthetic row. Revenue-generating
+stays at 6; only the bottom stage changed.
+
+**This is a demonstration promotion, not a finding.** No source says either
+product is an ongoing commercial operation. The partner site describes DDT's
+employer subscription and nothing beyond it, and says nothing at all about
+BitePlan's status. "Business" is the strongest claim the funnel can make, and
+these two now carry it on the owner's instruction rather than on evidence. If
+the funnel's bottom stage is ever quoted to a partner, this is the entry to
+check first.
+
 ## Incidental observation (not source-driven)
 
 `bnp02` runs 2026-07-01 → 2026-08-07, which is five weeks and two days, while

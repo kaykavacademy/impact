@@ -407,7 +407,7 @@ const DB = {
     {id:'p02', name:'BitePlan', aka:null, builderId:'b02', cohortId:'bnp01',
      domain:'Nutrition', country:'United Kingdom', url:'biteplan.co.uk',
      desc:'Meal plans a dietitian can generate for a client in minutes instead of an evening.',
-     level:6, history:{1:'2026-05-12',2:'2026-05-26',3:'2026-06-02',4:'2026-06-18',5:'2026-07-22',6:'2026-07-09'},
+     level:7, history:{1:'2026-05-12',2:'2026-05-26',3:'2026-06-02',4:'2026-06-18',5:'2026-07-22',6:'2026-07-09',7:'2026-09-10'},
      metrics:{users:m(1240,3,'PostHog','2026-09-15'),
               mau:m(612,3,'PostHog','2026-09-15'),
               paying:m(24,3,'Paystack','2026-09-15'),
@@ -436,7 +436,7 @@ const DB = {
     {id:'p05', name:'DDT', aka:'Don\'t Destroy the Structure', builderId:'b05', cohortId:'bnp01',
      domain:'Construction & engineering', country:'Nigeria', url:'ddtstructure.com',
      desc:'Structural load calculations and drawing register for small engineering firms.',
-     level:6, history:{1:'2026-05-13',2:'2026-05-27',3:'2026-06-08',4:'2026-07-02',5:'2026-09-01',6:'2026-09-16'},
+     level:7, history:{1:'2026-05-13',2:'2026-05-27',3:'2026-06-08',4:'2026-07-02',5:'2026-09-01',6:'2026-09-16',7:'2026-09-17'},
      metrics:{users:m(210,1,'Dashboard screenshot submitted 9 Sep','2026-09-09'),
               mau:m(88,1,'Dashboard screenshot','2026-09-09'),
               paying:m(1,2,'Employer annual subscription, verified by KayKav','2026-09-16'),
@@ -675,7 +675,7 @@ function seedDemo(){
      41 validated, 27 active, 14 with traction, 6 revenue, 1 business. */
   const levelPlan = shuffle([].concat(
     Array(2).fill(0), Array(1).fill(1), Array(20).fill(2), Array(11).fill(3),
-    Array(11).fill(4), Array(7).fill(5),  Array(3).fill(6),  Array(1).fill(7)));
+    Array(11).fill(4), Array(7).fill(5),  Array(4).fill(6)));
 
   // one product per builder, then 9 builders get a second
   const owners = newBuilders.map(b => b.id);
@@ -1507,7 +1507,11 @@ function vFunder(){
       ' products; the rest have no user data at all, so this is a floor and not a total.</p>') +
     q('Is there economic value?',
       '<p>' + money(a.revenueVerified) + ' of product revenue is verified, from ' + a.revenueProducts +
-      ' products. No businesses have been formed yet and no jobs have been reported. Programme income is never counted here.</p>') +
+      ' products. ' + (a.business
+        ? a.business + ' ' + (a.business === 1 ? 'product has' : 'products have') +
+          ' become an ongoing operation. No jobs have been reported yet.'
+        : 'No businesses have been formed yet and no jobs have been reported.') +
+      ' Programme income is never counted here.</p>') +
     q('Does the impact last?',
       '<div class="kk-grid three">' + survivalCard('30 days', a.survival('bnp01',30)) +
       survivalCard('90 days', a.survival('bnp01',90)) + survivalCard('180 days', a.survival('bnp01',180)) + '</div>') +
@@ -1756,8 +1760,12 @@ function drill(key){
         '<tr><td><button class="kk-linkcell" data-act="go" data-arg="product:' + p.id + '">' + esc(productName(p)) +
         '</button></td><td>' + money(p.metrics.revenue.value) + '</td><td>' + confMeter(p.metrics.revenue.conf) + '</td></tr>').join('')) +
       '<p class="kk-sub" style="margin-top:12px">Programme fees, sponsorship and grants are never counted here.</p>'],
-    business:  () => ['Businesses', 'None yet',
-      '<div class="kk-empty">No product has yet become an ongoing commercial operation. Showing a zero here is the point: the funnel is not padded at the bottom.</div>'],
+    business:  () => ['Businesses',
+      a.business ? a.business + ' ongoing ' + (a.business === 1 ? 'operation' : 'operations') : 'None yet',
+      a.business
+        ? plist(P.filter(p => p.level >= 7)) +
+          '<p class="kk-sub" style="margin-top:12px">An ongoing operation means the product is still running and still earning or serving beyond its builder. It is the narrowest stage on purpose.</p>'
+        : '<div class="kk-empty">No product has yet become an ongoing commercial operation. Showing a zero here is the point: the funnel is not padded at the bottom.</div>'],
     users:     () => ['People reached', fmt(a.usersReached) + ' known across ' + a.usersKnownOn + ' of ' + a.products + ' products',
       table(['Product','Users','Strength'], P.filter(p => p.metrics.users.value !== null).map(p =>
         '<tr><td><button class="kk-linkcell" data-act="go" data-arg="product:' + p.id + '">' + esc(productName(p)) +
