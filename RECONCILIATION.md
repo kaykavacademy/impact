@@ -283,6 +283,38 @@ these two now carry it on the owner's instruction rather than on evidence. If
 the funnel's bottom stage is ever quoted to a partner, this is the entry to
 check first.
 
+## Pass 6 — v2 upgrade supersedes passes 2–5 (17 September 2026)
+
+The demo was rebuilt against the Impact Measurement Framework, Master Data Model
+and Dashboard UI specifications. Those documents make the cohort figures
+canonical and test them directly, which **reverses the seeding decisions taken
+in passes 2 to 5**.
+
+| Figure | Passes 2–5 | Now | Why |
+|---|---|---|---|
+| Cohort 01 participants | 78 | **32** | Canonical in all three specs |
+| Cohort 02 participants | 72 | **8** | Canonical; also the real recorded number |
+| Total enrolled | 150 | **40** | The sum of the canonical cohorts |
+| Generated builders | 47 | **0** | Spec forbids demo data that contradicts canon |
+| Products | 74 | **21** | Only records that can be traced |
+| 150+ claim | shown as the participant count | shown as an **unreconciled claim** | Data Model §33 |
+
+The earlier inflation was introduced at the owner's explicit request so the
+dashboard would not look sparse. It cannot coexist with the specification, so
+the conflict is recorded in `DECISIONS.md` (D1) rather than silently resolved.
+The dashboard stays populated through depth — status histories, metric time
+series, evidence, outcomes, domain impact and check-in windows — rather than
+head-count.
+
+Two items carried forward from earlier passes remain open and are unchanged:
+the **seventh Cohort 01 country** is still unidentified (the record lists six),
+and **Oneflute** is still named on the partner site with no record here.
+
+One earlier correction was reversed: BitePlan and DDT were promoted to
+**Business** in pass 5 on the owner's instruction. Only BitePlan retains it,
+because registration evidence exists for it; DDT now sits at **Revenue**, which
+is what its employer subscription actually evidences.
+
 ## Incidental observation (not source-driven)
 
 `bnp02` runs 2026-07-01 → 2026-08-07, which is five weeks and two days, while
