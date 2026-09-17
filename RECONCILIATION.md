@@ -217,6 +217,44 @@ real reporting system, and the figures on the funder screen — including
 separating a demonstration from a claim. They should not be removed, and the
 figures should not be screenshotted into a deck.
 
+## Pass 4 — cohort balance and names (17 September 2026)
+
+Two changes to make the demo read as real data.
+
+**Enrolment re-split 78 / 72.** Cohort 01 previously carried 142 of the 150 and
+Cohort 02 just 8, which looked implausible in a walkthrough. The 150 is now
+split near-evenly. Generated builders were redistributed with it: 22 into
+Cohort 01 and 25 into Cohort 02, so records held are 34 of 78 and 33 of 72.
+
+> **This overwrites a real programme fact.** Cohort 02 genuinely enrolled 8
+> people — there are eight real named participants on record, and the cohort was
+> described as the first to capture impact data from day one. The dashboard now
+> says 72. That is a demonstration figure, not a correction, and it is the one
+> place where seeding has displaced something the programme actually knows. If
+> Cohort 02's real size ever matters in front of a partner, this is the number
+> to put back.
+
+**Names.** Generated builders had initials ("C. G."), which read as redacted
+rather than real. They now carry Nigerian given names with a surname initial —
+the same house style as the existing fictional Cohort 01 placeholders ("Tola
+A.") — with Swedish and Irish names for those two countries and some diaspora
+mix for the UK, US and Canada. Honorifics follow the background, so "Engr."
+lands on a surveyor and "Pharm." on a pharmacist.
+
+The surname stays an initial deliberately. Forty-seven invented full names sitting
+next to invented revenue figures on a public URL is the kind of thing that reads
+as a real participant list, and a generated full name can collide with a real
+person. The initial keeps the rows looking like the real ones without
+manufacturing identities.
+
+Two things were deliberately **not** changed:
+
+- The eight real Cohort 02 participants keep the initials they were reduced to
+  earlier. Nothing in this pass restores a real person's name.
+- Cohort 02 stays Nigeria-only, which is what the record says, so spreading
+  enrolment across cohorts did not quietly invent new country reach. The
+  prototype still shows 6 countries against the site's 7 (claim 2, still open).
+
 ## Incidental observation (not source-driven)
 
 `bnp02` runs 2026-07-01 → 2026-08-07, which is five weeks and two days, while

@@ -355,10 +355,10 @@ const DB = {
 
   cohorts:[
     {id:'bnp01', programmeId:'bnp', name:'BNP Cohort 01', start:'2026-04-30', end:'2026-05-30',
-     demoDay:'2026-05-30', enrolled:142, recorded:12, countries:['Nigeria','United States','United Kingdom','Canada','Sweden','Ireland'],
+     demoDay:'2026-05-30', enrolled:78, recorded:12, countries:['Nigeria','United States','United Kingdom','Canada','Sweden','Ireland'],
      continents:3, sessions:9, note:'12 live products shipped. 130 participant records still to be backfilled.'},
     {id:'bnp02', programmeId:'bnp', name:'BNP Cohort 02', start:'2026-07-01', end:'2026-08-07',
-     demoDay:'2026-08-07', enrolled:8, recorded:8, countries:['Nigeria'], continents:1, sessions:9,
+     demoDay:'2026-08-07', enrolled:72, recorded:8, countries:['Nigeria'], continents:1, sessions:9,
      note:'First cohort capturing impact data from day one.'},
     {id:'deb01', programmeId:'deb', name:'DEB Cohort 01', start:null, end:null, demoDay:null,
      enrolled:0, recorded:0, countries:[], continents:0, sessions:0, note:'Not yet run.'}
@@ -599,10 +599,35 @@ function seedDemo(){
   const int  = (lo, hi) => lo + Math.floor(rnd() * (hi - lo + 1));
   const pick = a => a[Math.floor(rnd() * a.length)];
   const shuffle = a => { for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-  const day  = n => new Date(Date.UTC(2026, 4, 10) + n * 864e5).toISOString().slice(0, 10);
+  // cohort 01 ran Apr-May 2026, cohort 02 Jul-Aug 2026, so their records start apart
+  const BASE = {bnp01: Date.UTC(2026, 4, 10), bnp02: Date.UTC(2026, 7, 10)};
+  const dayFrom = (base, n) => new Date(base + n * 864e5).toISOString().slice(0, 10);
+  const day  = n => dayFrom(BASE.bnp01, n);
 
-  const INITIALS = 'ABCDEFGHIJKLMNOPRSTUVWY'.split('');
-  const COUNTRIES = ['Nigeria','Nigeria','Nigeria','Nigeria','United Kingdom','United States','Canada','Sweden','Ireland'];
+  /* Names are invented stand-ins for people who are not in the record yet.
+     They follow the house style already used for the fictional Cohort 01
+     placeholders ("Tola A.") — a given name with a surname initial — so a
+     generated row never reads as a fully identified individual. */
+  const NG = ['Adebayo','Adeola','Ayodele','Babatunde','Bolanle','Damilola','Folake','Funmilayo','Gbenga','Kehinde',
+    'Kunle','Olamide','Oluwaseun','Omolara','Segun','Simisola','Temitope','Titilayo','Yetunde','Abiodun','Sade',
+    'Adaeze','Amaka','Chiamaka','Chidinma','Chika','Chinaza','Chinedu','Ebele','Ekene','Emeka','Ifeanyi','Ifeoma',
+    'Kelechi','Ngozi','Nkechi','Nneka','Obinna','Uzoma','Chukwuma','Ucheoma',
+    'Aisha','Amina','Fatima','Halima','Hauwa','Ibrahim','Idris','Maryam','Musa','Sadiq','Suleiman','Yusuf','Zainab',
+    'Bashir','Aminu','Bassey','Efe','Itoro','Osas','Ovie','Preye','Tamuno'];
+  const SE = ['Erik','Astrid','Karin','Anders','Elin','Lars','Ingrid','Johan'];
+  const IE = ['Niamh','Sinead','Conor','Maeve','Liam','Fiona','Declan','Aoife'];
+  const WEST = ['Marcus','Grace','Daniel','Hannah','Peter','Claire','Nathan','Ruth'];
+  const SURNAME = 'ABCDEFGHIJKLMNOPRSTUVWY'.split('');
+  // Sweden and Ireland draw local names. Nigeria is Nigerian. The UK, US and
+  // Canada are mostly Nigerian diaspora, which is what the real rows show.
+  const namePool = c => c === 'Sweden' ? SE : c === 'Ireland' ? IE
+                      : c === 'Nigeria' ? NG : (rnd() > 0.7 ? WEST : NG);
+  // an honorific only where the background earns one
+  const titleFor = bg =>
+    /engineer|surveyor/i.test(bg) ? (rnd() > 0.45 ? 'Engr. ' : '') :
+    /pharmacist/i.test(bg)        ? (rnd() > 0.35 ? 'Pharm. ' : '') :
+    /laboratory|radiographer|public health/i.test(bg) ? (rnd() > 0.6 ? 'Dr. ' : '') : '';
+  const CO_BNP01 = ['Nigeria','Nigeria','Nigeria','Nigeria','Nigeria','United Kingdom','United States','Canada','Sweden','Ireland'];
   const BACKGROUND = ['Clinic administrator','Secondary school teacher','Logistics coordinator','Credit analyst',
     'Public health officer','Civil engineer','Pharmacist','Procurement officer','Laboratory scientist','Estate surveyor',
     'Insurance broker','Agricultural extension officer','Bank relationship manager','School administrator','HR officer',
@@ -616,15 +641,29 @@ function seedDemo(){
   const B = ['Track','Desk','Flow','Log','Book','Board','Point','Hub','Line','Pilot','Sync','Bridge','Watch','Path',
     'Base','Wise','Ly','Mate','Grid','Deck'];
 
-  /* ---- builders: 47 additional Cohort 01 records ------------------- */
+  /* ---- builders: 47 additional records, split across both cohorts ---
+     22 join Cohort 01 and 25 Cohort 02, so neither cohort looks like the
+     whole programme. Cohort 02 stays Nigeria-only, which is what the
+     record actually says, so no new country reach is invented. */
+  const takenNames = new Set(DB.builders.map(b => (b.name || '').toLowerCase()));
+  const personName = (country, bg) => {
+    for(;;){
+      const n = titleFor(bg) + pick(namePool(country)) + ' ' + pick(SURNAME) + '.';
+      if(!takenNames.has(n.toLowerCase())){ takenNames.add(n.toLowerCase()); return n; }
+    }
+  };
+
   const newBuilders = [];
   for(let i = 0; i < 47; i++){
+    const cohortId = i < 22 ? 'bnp01' : 'bnp02';
+    const country  = cohortId === 'bnp01' ? pick(CO_BNP01) : 'Nigeria';
+    const background = pick(BACKGROUND);
     newBuilders.push({
       id: 'g' + String(i + 1).padStart(2, '0'),
-      name: pick(INITIALS) + '. ' + pick(INITIALS) + '.',
-      country: pick(COUNTRIES),
-      background: pick(BACKGROUND),
-      cohortId: 'bnp01',
+      name: personName(country, background),
+      country,
+      background,
+      cohortId,
       completed: rnd() > 0.08,
       continuing: rnd() > 0.34 ? 'yes' : (rnd() > 0.5 ? 'unknown' : 'no')
     });
@@ -654,14 +693,15 @@ function seedDemo(){
   plan.forEach((level, i) => {
     const owner = byId(DB.builders, ownersOrdered[i]);
     const id = 'gp' + String(i + 1).padStart(2, '0');
+    const base = BASE[owner.cohortId];
     const t0 = int(0, 40);
     const history = {};
-    for(let l = 1; l <= level; l++) history[l] = day(t0 + (l - 1) * int(12, 34));
+    for(let l = 1; l <= level; l++) history[l] = dayFrom(base, t0 + (l - 1) * int(12, 34));
 
     // evidence gradient: most claims are weak, a few are checked, gaps stay gaps
     const conf = () => { const r = rnd(); return r > 0.88 ? 3 : r > 0.62 ? 2 : r > 0.3 ? 1 : 0; };
     const src  = c => ['Builder check-in','Screenshot attached by the builder','Reviewed by a KayKav reviewer','Read from a connected system'][c];
-    const seen = day(t0 + 60 + int(0, 60));
+    const seen = dayFrom(base, t0 + 60 + int(0, 60));
     const users = level >= 3 ? int(12, 1400) : null;
     const mau   = level >= 4 && users ? Math.round(users * (0.25 + rnd() * 0.45)) : null;
     const rev   = level >= 6 ? int(40, 2600) : null;
@@ -677,8 +717,8 @@ function seedDemo(){
 
     const timeline = [];
     if(level >= 3 && users){
-      timeline.push({d:30, date:day(t0 + 30), users:Math.round(users * 0.35), revenue:0});
-      if(level >= 4) timeline.push({d:90, date:day(t0 + 90), users:Math.round(users * 0.78), revenue:rev ? Math.round(rev * 0.4) : 0});
+      timeline.push({d:30, date:dayFrom(base, t0 + 30), users:Math.round(users * 0.35), revenue:0});
+      if(level >= 4) timeline.push({d:90, date:dayFrom(base, t0 + 90), users:Math.round(users * 0.78), revenue:rev ? Math.round(rev * 0.4) : 0});
     }
 
     const nm  = nameFor();
@@ -698,11 +738,15 @@ function seedDemo(){
   });
 
   /* ---- keep cohort record counts consistent with the seeded rows --- */
-  const c1 = byId(DB.cohorts, 'bnp01');
-  c1.recorded = DB.builders.filter(b => b.cohortId === 'bnp01').length;
-  c1.note = DB.products.filter(p => p.cohortId === 'bnp01' && p.level >= 2).length +
-            ' live products shipped. ' + (c1.enrolled - c1.recorded) +
-            ' participant records still to be backfilled.';
+  ['bnp01','bnp02'].forEach(cid => {
+    const c = byId(DB.cohorts, cid);
+    c.recorded = DB.builders.filter(b => b.cohortId === cid).length;
+    const shipped = DB.products.filter(p => p.cohortId === cid && p.level >= 2).length;
+    const behind  = c.enrolled - c.recorded;
+    c.note = shipped + ' live products shipped. ' +
+             (behind > 0 ? behind + ' participant records still to be backfilled.'
+                         : 'Every participant has a record.');
+  });
 
   DB.checkins.forEach(c => {
     const held = byId(DB.cohorts, c.cohortId).recorded;
