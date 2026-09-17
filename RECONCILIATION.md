@@ -177,6 +177,46 @@ could not be settled without inventing a value.
 
 One item, Oneflute, was not raised and remains held.
 
+## Pass 3 — demonstration seed (17 September 2026)
+
+The prototype was filled with generated sample records so it reads as a
+populated system in stakeholder walkthroughs. This changes what the document
+above is describing, so in short:
+
+- A `seedDemo()` block now generates 47 additional builders and 56 additional
+  products on load, on a fixed seed so every run is identical. It is clearly
+  fenced in the source and removable in one delete.
+- The funnel now reads: 150 trained, 65 builders, 72 built, **70 deployed**,
+  41 with real users, 27 active, 14 with traction, 6 revenue-generating, 1
+  business. The 70 deployed was chosen to line up with the partner site's
+  "70+ live products" (claim 5 above), which until now the prototype
+  contradicted at 17.
+- The hand-written records — the named Cohort 01 and Cohort 02 products and
+  their builders — were left untouched, so every correction recorded above
+  still stands.
+- Country coverage was **not** inflated. All generated builders were placed in
+  the six countries already on record, so the prototype still shows 6 against
+  the site's 7. The seventh remains unidentified (claim 2), and inventing a
+  country is a factual claim about programme reach, not a volume placeholder.
+- No testimonial or impact story was fabricated. Impact Stories still holds the
+  two real narratives; generated records carry figures, not human stories.
+- Both in-app banners were rewritten. They previously said product names came
+  from programme records, which stopped being true the moment the seed was
+  added. They now state plainly that most records are generated and that
+  nothing on screen should be reported.
+
+Three pieces of prose carrying hardcoded counts were also found stale and made
+computed: the gaps page ("Cohort 01 enrolled 32 people. Twelve appear here"),
+the drill-down ("12 of 32 participant records"), and the funder answer ("Five
+Cohort 01 products"). The first two had already been wrong since enrolment moved
+to 150 in pass 2.
+
+**The standing risk.** The dashboard is now visually indistinguishable from a
+real reporting system, and the figures on the funder screen — including
+"$3,478 verified revenue" — are invented. The banners are the only thing
+separating a demonstration from a claim. They should not be removed, and the
+figures should not be screenshotted into a deck.
+
 ## Incidental observation (not source-driven)
 
 `bnp02` runs 2026-07-01 → 2026-08-07, which is five weeks and two days, while

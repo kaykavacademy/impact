@@ -580,6 +580,151 @@ const DB = {
   ]
 };
 
+/* =========================== demo seed ==============================
+   GENERATED SAMPLE DATA — not programme data.
+
+   Everything below is synthesised so the dashboard reads as a populated
+   system in a walkthrough. It is deterministic: the same seed produces
+   the same records on every load, so screenshots stay stable.
+
+   The hand-written records above (the named Cohort 01 and Cohort 02
+   products, and their builders) are left untouched. Nothing here is a
+   measurement, and no figure generated here should be reported.
+
+   To strip the demo layer, delete this block and the seedDemo() call.
+==================================================================== */
+function seedDemo(){
+  let s = 20260917;                                   // fixed seed
+  const rnd  = () => (s = (s * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+  const int  = (lo, hi) => lo + Math.floor(rnd() * (hi - lo + 1));
+  const pick = a => a[Math.floor(rnd() * a.length)];
+  const shuffle = a => { for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const day  = n => new Date(Date.UTC(2026, 4, 10) + n * 864e5).toISOString().slice(0, 10);
+
+  const INITIALS = 'ABCDEFGHIJKLMNOPRSTUVWY'.split('');
+  const COUNTRIES = ['Nigeria','Nigeria','Nigeria','Nigeria','United Kingdom','United States','Canada','Sweden','Ireland'];
+  const BACKGROUND = ['Clinic administrator','Secondary school teacher','Logistics coordinator','Credit analyst',
+    'Public health officer','Civil engineer','Pharmacist','Procurement officer','Laboratory scientist','Estate surveyor',
+    'Insurance broker','Agricultural extension officer','Bank relationship manager','School administrator','HR officer',
+    'Radiographer','Tax consultant','Quantity surveyor','Community health worker','Transport planner','Records officer',
+    'Quality manager','Municipal planner','Veterinary officer','Payroll officer'];
+  const DOMAIN = ['Healthcare','Agriculture','Education','Retail','Construction','Financial services','Legal',
+    'Logistics','Public sector','Energy','Professional services','Nutrition'];
+  const A = ['Clinic','Farm','Site','Ward','Ledger','Route','Shelf','Case','Roster','Track','Med','Agro','Stock',
+    'Claim','Tutor','Fleet','Grant','Permit','Lab','Yield','Care','Desk','Pay','Audit','Bill','Crop','Dose','Fix',
+    'Gate','Hive','Join','Kiln','Loop','Mark','Note','Pulse','Quay','Rail','Sort','Tally'];
+  const B = ['Track','Desk','Flow','Log','Book','Board','Point','Hub','Line','Pilot','Sync','Bridge','Watch','Path',
+    'Base','Wise','Ly','Mate','Grid','Deck'];
+
+  /* ---- builders: 47 additional Cohort 01 records ------------------- */
+  const newBuilders = [];
+  for(let i = 0; i < 47; i++){
+    newBuilders.push({
+      id: 'g' + String(i + 1).padStart(2, '0'),
+      name: pick(INITIALS) + '. ' + pick(INITIALS) + '.',
+      country: pick(COUNTRIES),
+      background: pick(BACKGROUND),
+      cohortId: 'bnp01',
+      completed: rnd() > 0.08,
+      continuing: rnd() > 0.34 ? 'yes' : (rnd() > 0.5 ? 'unknown' : 'no')
+    });
+  }
+  DB.builders.push(...newBuilders);
+
+  /* ---- products: an explicit level plan, so the funnel is exact ----
+     Totals after seeding: 74 records, 72 built, 70 deployed,
+     41 validated, 27 active, 14 with traction, 6 revenue, 1 business. */
+  const levelPlan = shuffle([].concat(
+    Array(2).fill(0), Array(1).fill(1), Array(20).fill(2), Array(11).fill(3),
+    Array(11).fill(4), Array(7).fill(5),  Array(3).fill(6),  Array(1).fill(7)));
+
+  // one product per builder, then 9 builders get a second
+  const owners = newBuilders.map(b => b.id);
+  const extra  = shuffle(owners.slice()).slice(0, 9);
+  const ownerPlan = owners.concat(extra);
+
+  // the unbuilt (level 0) records go last, onto builders who already have a built one,
+  // so every seeded builder still counts as a builder with at least one build
+  const plan = levelPlan.filter(l => l !== 0).concat(levelPlan.filter(l => l === 0));
+  const ownersOrdered = owners.concat(extra);
+
+  const used = new Set(DB.products.map(p => (p.name || '').toLowerCase()));
+  const nameFor = () => { for(;;){ const n = pick(A) + pick(B); if(!used.has(n.toLowerCase())){ used.add(n.toLowerCase()); return n; } } };
+
+  plan.forEach((level, i) => {
+    const owner = byId(DB.builders, ownersOrdered[i]);
+    const id = 'gp' + String(i + 1).padStart(2, '0');
+    const t0 = int(0, 40);
+    const history = {};
+    for(let l = 1; l <= level; l++) history[l] = day(t0 + (l - 1) * int(12, 34));
+
+    // evidence gradient: most claims are weak, a few are checked, gaps stay gaps
+    const conf = () => { const r = rnd(); return r > 0.88 ? 3 : r > 0.62 ? 2 : r > 0.3 ? 1 : 0; };
+    const src  = c => ['Builder check-in','Screenshot attached by the builder','Reviewed by a KayKav reviewer','Read from a connected system'][c];
+    const seen = day(t0 + 60 + int(0, 60));
+    const users = level >= 3 ? int(12, 1400) : null;
+    const mau   = level >= 4 && users ? Math.round(users * (0.25 + rnd() * 0.45)) : null;
+    const rev   = level >= 6 ? int(40, 2600) : null;
+
+    const metrics = {
+      users:   users !== null && rnd() > 0.1 ? m(users, conf(), src(conf()), seen) : gap('No check-in returned'),
+      mau:     mau   !== null && rnd() > 0.2 ? m(mau, conf(), 'Builder check-in', seen) : gap(),
+      paying:  level >= 6 ? m(int(1, 14), rnd() > 0.5 ? 2 : 1, 'Payment provider export', seen) : gap(),
+      revenue: rev !== null ? m(rev, rnd() > 0.45 ? 2 : 0, 'Payment provider export', seen) : gap(),
+      mrr:     level >= 6 && rnd() > 0.4 ? m(int(15, 320), 1, 'Builder check-in', seen) : gap(),
+      orgs:    level >= 5 && rnd() > 0.45 ? m(int(2, 11), 2, 'Organisation names supplied and checked', seen) : gap()
+    };
+
+    const timeline = [];
+    if(level >= 3 && users){
+      timeline.push({d:30, date:day(t0 + 30), users:Math.round(users * 0.35), revenue:0});
+      if(level >= 4) timeline.push({d:90, date:day(t0 + 90), users:Math.round(users * 0.78), revenue:rev ? Math.round(rev * 0.4) : 0});
+    }
+
+    const nm  = nameFor();
+    const tld = pick(['.app','.co','.ng','.io','.online']);
+
+    DB.products.push({
+      id, name:nm, aka:null, builderId:owner.id, cohortId:owner.cohortId,
+      domain:pick(DOMAIN), country:owner.country,
+      url: level >= 2 ? nm.toLowerCase() + tld : null,
+      desc:'Generated sample record for demonstration.',
+      level, history, metrics,
+      impact: level >= 4 && rnd() > 0.55
+        ? [{label:pick(['People served','Records processed','Sites covered','Cases handled']), value:int(40, 4200), conf:rnd() > 0.5 ? 2 : 1}]
+        : [],
+      timeline
+    });
+  });
+
+  /* ---- keep cohort record counts consistent with the seeded rows --- */
+  const c1 = byId(DB.cohorts, 'bnp01');
+  c1.recorded = DB.builders.filter(b => b.cohortId === 'bnp01').length;
+  c1.note = DB.products.filter(p => p.cohortId === 'bnp01' && p.level >= 2).length +
+            ' live products shipped. ' + (c1.enrolled - c1.recorded) +
+            ' participant records still to be backfilled.';
+
+  DB.checkins.forEach(c => {
+    const held = byId(DB.cohorts, c.cohortId).recorded;
+    c.expected = held;
+    if(c.returned) c.returned = Math.round(held * (c.window === 30 ? 0.64 : 0.41));
+  });
+
+  /* ---- a fuller verification queue --------------------------------- */
+  const claimable = DB.products.filter(p => p.id.startsWith('gp') && p.level >= 3);
+  shuffle(claimable).slice(0, 8).forEach((p, i) => {
+    const b = builderOf(p);
+    DB.queue.push({
+      id:'gq' + (i + 1), productId:p.id,
+      metric:pick(['users','revenue','orgs']),
+      claim:pick([fmt(int(60, 900)) + ' registered users', fmt(int(3, 40)) + ' paying customers',
+                  int(2, 9) + ' organisations using it weekly', fmt(int(100, 2000)) + ' records processed this month']),
+      evidence:pick(['Dashboard screenshot','Payment provider export','Named contact supplied','Analytics connection requested']),
+      from:b ? b.name : '—', date:day(int(100, 130)), status:'pending'
+    });
+  });
+}
+
 /* =========================== state ================================== */
 const state = {
   mode:'internal',
@@ -807,7 +952,7 @@ function vOverview(){
   '<h1 class="kk-h1">What KayKav builders have made, and what became of it</h1>' +
   '<p class="kk-lede">Every figure here carries the strength of its evidence. Numbers that are only claimed are drawn lighter than numbers a reviewer or a connected system has confirmed.</p>' +
 
-  '<div class="kk-flag"><span>◇</span><div><b>This is seeded data.</b> Cohort dates, enrolment, countries and product names come from programme records. Usage, revenue and impact figures are placeholders for testing the interface and must not be reported.</div></div>' +
+  '<div class="kk-flag"><span>◇</span><div><b>This is a demonstration build.</b> Most records on this screen are generated sample data, created to show the interface populated. Only the cohort dates, enrolment totals and the named Cohort 01 and 02 products come from programme records. No usage, revenue or impact figure here is a measurement, and none of it should be reported.</div></div>' +
 
   '<section class="kk-section"><h2 class="kk-h2">The impact funnel</h2>' +
   '<p class="kk-sub">Each stage is a subset of the one above it. Select a stage to see the records behind the number.</p>' +
@@ -1178,7 +1323,8 @@ function gapList(){
   const out = [];
   const missingBuilders = a.enrolled - a.builderRecords;
   if(missingBuilders > 0) out.push({n:missingBuilders, t:'participant records not yet backfilled',
-    d:'Cohort 01 enrolled 32 people. Twelve appear here through the shipping list. The rest exist only in programme records.'});
+    d:'Cohort 01 enrolled ' + byId(DB.cohorts,'bnp01').enrolled + ' people. ' +
+       byId(DB.cohorts,'bnp01').recorded + ' appear here as records. The rest exist only in programme records.'});
   const unnamed = DB.products.filter(p => !p.name).length;
   if(unnamed) out.push({n:unnamed, t:'products with no name on record',
     d:'Counted in the shipped total but nothing else is known about them. Each one weakens every downstream figure.'});
@@ -1290,7 +1436,7 @@ function vFunder(){
   return '' +
   '<h1 class="kk-h1">KayKav Builder Impact</h1>' +
   '<p class="kk-lede">KayKav sets out to increase the number of people who can find a real problem, architect a solution and ship it. This is what that has produced so far, including the parts that have not worked yet.</p>' +
-  '<div class="kk-flag"><span>◇</span><div><b>Seeded figures.</b> Enrolment, cohort dates and product names are from programme records. Usage and revenue figures are placeholders for testing this interface.</div></div>' +
+  '<div class="kk-flag"><span>◇</span><div><b>Demonstration build — not a report.</b> Enrolment totals and cohort dates come from programme records. Most product records, and every usage and revenue figure on this screen, are generated sample data created to demonstrate the interface. Nothing here has been measured, and none of it should be quoted or reported.</div></div>' +
 
   '<div class="kk-grid three">' + hero.map(h =>
     '<button class="kk-metric" data-act="drill" data-arg="' + h.k + '">' +
@@ -1307,7 +1453,9 @@ function vFunder(){
       '<p>' + a.enrolled + ' people across two cohorts of Built, Not Prompted, in ' + a.cohortCountries +
       ' countries and 3 continents. Domain Expert Builders has not yet run.</p>') +
     q('What did they actually create?',
-      '<p>' + a.products + ' product records, of which ' + a.deployed + ' reached a live URL. Five Cohort 01 products are counted in that total but carry no further detail, which is recorded as a gap rather than smoothed over.</p>' +
+      '<p>' + a.products + ' product records, of which ' + a.deployed + ' reached a live URL. ' +
+        DB.products.filter(p => !p.name).length +
+        ' Cohort 01 products are counted in that total but carry no further detail, which is recorded as a gap rather than smoothed over.</p>' +
       '<button class="kk-btn sm ghost" data-act="go" data-arg="products">Open the product list</button>') +
     q('Is anyone actually using them?',
       '<p>' + a.validated + ' products have been used by someone outside the build process and ' + a.active +
@@ -1546,7 +1694,10 @@ function drill(key){
       table(['Cohort','Ran','Enrolled','Records held'], DB.cohorts.filter(c => c.enrolled).map(c =>
         '<tr><td>' + esc(c.name) + '</td><td class="kk-muted">' + dtShort(c.start) + '</td>' +
         '<td>' + c.enrolled + '</td><td>' + c.recorded + '</td></tr>').join('')) +
-      '<p class="kk-sub" style="margin-top:12px">Cohort 01 holds 12 of 32 participant records. The remaining 20 sit in programme records and have not been backfilled.</p>'],
+      '<p class="kk-sub" style="margin-top:12px">Cohort 01 holds ' + byId(DB.cohorts,'bnp01').recorded + ' of ' +
+        byId(DB.cohorts,'bnp01').enrolled + ' participant records. The remaining ' +
+        (byId(DB.cohorts,'bnp01').enrolled - byId(DB.cohorts,'bnp01').recorded) +
+        ' sit in programme records and have not been backfilled.</p>'],
     builders:  () => ['Builders', 'Records with at least one product past the idea stage',
       table(['Builder','Cohort','Products'], DB.builders.filter(b => productsOf(b.id).some(p => p.level >= 1)).map(b =>
         '<tr><td><button class="kk-linkcell" data-act="go" data-arg="builder:' + b.id + '">' + esc(builderName(b)) +
@@ -1650,6 +1801,7 @@ document.addEventListener('click', e => {
 $('#scrim').addEventListener('click', closeDrawer);
 document.addEventListener('keydown', e => { if(e.key === 'Escape') closeDrawer(); });
 
+seedDemo();
 render();
 </script>
 
