@@ -75,7 +75,7 @@ screen says so, and it should stay until the data does.
 | Screen | Needs |
 |---|---|
 | Evidence / verification queue | Write path, reviewer identity, audit trail, file storage |
-| Check-ins | Scheduling, outbound email/SMS, a participant-facing form, response storage |
+| Check-ins | Scheduling, outbound email/SMS, response storage, and a transactional write path — `submitCheckin()` currently mutates six collections in sequence with no rollback if one step fails |
 | Reports | Server-side rendering for PDF; the preview is HTML only |
 | Data Quality | Scheduled recomputation; expensive to derive per request at scale |
 | Product detail | Connected-data sync (Paystack, Stripe, PostHog) behind `CONNECTED_DATA` |

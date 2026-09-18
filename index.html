@@ -432,6 +432,24 @@ table.kk-table{border-collapse:collapse;width:100%;min-width:660px;font-size:13.
   .kk-tl .dte{grid-column:1;margin-top:1px}
 }
 
+/* ---------- v2: check-in wizard ---------- */
+.kk-prog{display:flex;align-items:center;gap:10px;margin-bottom:22px}
+.kk-progtrack{flex:1;height:5px;border-radius:3px;background:var(--rule2);overflow:hidden}
+.kk-progtrack>i{display:block;height:100%;background:var(--blue);border-radius:3px;transition:width .2s}
+.kk-progstep{font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums;white-space:nowrap}
+.kk-qtext{font-family:var(--serif);font-weight:400;font-size:clamp(19px,2.4vw,24px);
+  line-height:1.25;letter-spacing:-.01em;margin:0 0 6px}
+.kk-qhelp{font-size:13.5px;color:var(--ink3);margin:0 0 18px;max-width:54ch}
+.kk-ciact{display:flex;gap:8px;align-items:center;margin-top:24px;flex-wrap:wrap}
+.kk-ciact .spacer{flex:1}
+.kk-writes{list-style:none;margin:0;padding:0}
+.kk-writes li{display:grid;grid-template-columns:1fr auto;gap:4px 14px;padding:10px 0;
+  border-bottom:1px solid var(--rule2);align-items:baseline}
+.kk-writes li:last-child{border-bottom:none}
+.kk-writes .wk{font-size:13.5px;color:var(--ink2)}
+.kk-writes .wv{font-size:14px;font-weight:500;text-align:right}
+.kk-writes .wn{grid-column:1/-1;font-size:12px;color:var(--ink3)}
+
 /* ---------- v2: misc ---------- */
 .kk-eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin:0 0 8px}
 .kk-grid.four{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
@@ -514,13 +532,14 @@ const OUTCOME_META = {
   CONTRACT_WON:     'Contract won',
   PARTNERSHIP:      'Partnership',
   SKILL_APPLICATION:'Skill applied at work',
-  NO_OUTCOME:       'No economic outcome reported'
+  NO_OUTCOME:       'No economic outcome reported',
+  OTHER:            'Other outcome'
 };
 const OUTCOME_GROUP = {
   NEW_EMPLOYMENT:'career', PROMOTION:'career', NEW_ROLE:'career', SKILL_APPLICATION:'career',
   FREELANCE_INCOME:'economic', CONSULTING_INCOME:'economic', BUSINESS_FORMATION:'economic',
   FUNDING_RAISED:'economic', CONTRACT_WON:'economic',
-  NEW_PRODUCT:'product', PARTNERSHIP:'product', NO_OUTCOME:'none'
+  NEW_PRODUCT:'product', PARTNERSHIP:'product', NO_OUTCOME:'none', OTHER:'career'
 };
 const ATTRIBUTION = {
   DIRECT:'Directly attributable', PARTIAL:'Partially attributable',
@@ -2676,10 +2695,315 @@ function vPublic(){
 /* =========================================================================
    VIEW: BUILDER MODE (the check-in a participant actually fills in)
 ========================================================================= */
+/* ---- the check-in questionnaire -------------------------------------
+   Deliberately short (Data Model §42: every question must materially improve
+   our understanding, or it is not asked). Each answer writes into the
+   normalised entities on submit — see submitCheckin().                    */
+const CHECKIN_Q = [
+  {k:'hasProduct', type:'choice', q:'Do you have a product from the programme?',
+   help:'If nothing was built, say so. A blank record is more useful to us than a guess.',
+   options:['Yes','No, I did not build anything'],
+   when:d => d._noProduct},
+  {k:'productName', type:'text', q:'What is it called?',
+   help:'We will open a record for it.', when:d => d._noProduct && d.hasProduct === 'Yes'},
+
+  {k:'status', type:'choice', q:'What is the current status of your product?',
+   help:'Pick the honest one. Paused and shut down are recorded, not penalised.',
+   options:['Actively growing','Active / maintaining','Beta / testing','Still building','Paused','Pivoted','Shut down'],
+   when:d => !d._noProduct || d.hasProduct === 'Yes'},
+
+  {k:'users', type:'number', q:'Roughly how many real people have used it?',
+   help:'A rough number is fine. If you genuinely do not know, skip — we record that as unknown, never as zero.',
+   skippable:true, when:d => !d._noProduct || d.hasProduct === 'Yes'},
+
+  {k:'mau', type:'number', q:'How many used it in the last 30 days?',
+   help:'This is the figure that tells us whether a product is still alive.',
+   skippable:true, when:d => !d._noProduct || d.hasProduct === 'Yes'},
+
+  {k:'paid', type:'choice', q:'Has anyone paid for it?',
+   help:'Real customer payments only. Not grants, not prize money, not your own money.',
+   options:['No','Yes, one-time','Yes, recurring','Yes, from an organisation'],
+   when:d => !d._noProduct || d.hasProduct === 'Yes'},
+
+  {k:'revenue', type:'number', q:'Roughly how much has it earned in total?',
+   help:'In US dollars, approximately.', skippable:true,
+   when:d => d.paid && d.paid !== 'No'},
+
+  {k:'building', type:'choice', q:'Have you kept building since the programme?',
+   help:'Anything counts — the same product, something new, or building at work.',
+   options:['Yes, the same product','Yes, something else','Yes, both','No']},
+
+  {k:'outcome', type:'choice', q:'Has learning to build changed your work or income?',
+   help:'We ask because the product is only half of what we are measuring.',
+   options:['Yes','No','Not sure']},
+
+  {k:'outcomeType', type:'choice', q:'What changed?',
+   help:'So we can record it as the right kind of outcome.',
+   options:['New employment','Promotion','New role','Freelance income','Consulting income',
+            'Business formation','Funding raised','Contract won','Skill applied at work','Something else'],
+   when:d => d.outcome === 'Yes'},
+
+  {k:'outcomeHow', type:'text', q:'Tell us briefly how.',
+   help:'One or two sentences. This is what we quote from, with your permission.',
+   skippable:true, when:d => d.outcome === 'Yes'},
+
+  {k:'evidence', type:'choice', q:'Can you back any of this up?',
+   help:'Evidence is what moves a number from "reported" to "verified". Skipping is fine — the figures just stay marked as self-reported.',
+   options:['Analytics screenshot','Payment provider export','A customer we can contact',
+            'Connect my analytics','Nothing to attach']}
+];
+
+const OUTCOME_FROM_LABEL = {
+  'New employment':'NEW_EMPLOYMENT','Promotion':'PROMOTION','New role':'NEW_ROLE',
+  'Freelance income':'FREELANCE_INCOME','Consulting income':'CONSULTING_INCOME',
+  'Business formation':'BUSINESS_FORMATION','Funding raised':'FUNDING_RAISED',
+  'Contract won':'CONTRACT_WON','Skill applied at work':'SKILL_APPLICATION','Something else':'OTHER'
+};
+const STATUS_FROM_LABEL = {
+  'Actively growing':'ACTIVE','Active / maintaining':'ACTIVE','Beta / testing':'DEPLOYED',
+  'Still building':'BUILT','Paused':'PAUSED','Pivoted':'PIVOTED','Shut down':'SHUT_DOWN'
+};
+
+// questions that apply given the answers so far
+function ciSteps(){
+  const d = state.checkin.draft;
+  return CHECKIN_Q.filter(q => !q.when || q.when(d));
+}
+
+// Text and number answers live in the DOM until navigation, so read them first.
+function ciCapture(){
+  const el = document.querySelector('[data-k]');
+  if(!el) return;
+  const k = el.dataset.k, raw = el.value.trim();
+  if(raw === '') delete state.checkin.draft[k];
+  else state.checkin.draft[k] = el.type === 'number' ? Number(raw) : raw;
+}
+
+function vCheckinForm(){
+  const steps = ciSteps(), i = Math.min(state.checkin.step, steps.length - 1), q = steps[i];
+  const d = state.checkin.draft;
+  const val = d[q.k];
+
+  let field = '';
+  if(q.type === 'choice'){
+    field = '<div class="kk-radios" role="group" aria-label="' + esc(q.q) + '">' + q.options.map(o =>
+      '<button class="kk-radio" data-act="ci-pick" data-arg="' + esc(q.k) + '::' + esc(o) + '" aria-pressed="' +
+      (val === o) + '">' + esc(o) + '</button>').join('') + '</div>';
+  } else if(q.type === 'number'){
+    field = '<input class="kk-input" type="number" min="0" inputmode="numeric" data-k="' + esc(q.k) + '" ' +
+      'value="' + (val === undefined || val === null ? '' : esc(val)) + '" placeholder="e.g. 120" ' +
+      'aria-label="' + esc(q.q) + '" style="max-width:220px">';
+  } else {
+    field = '<textarea class="kk-textarea" data-k="' + esc(q.k) + '" aria-label="' + esc(q.q) + '" ' +
+      'placeholder="Type your answer">' + esc(val || '') + '</textarea>';
+  }
+
+  const answered = q.type === 'choice' ? val !== undefined : true;
+  const last = i === steps.length - 1;
+
+  return '<div style="max-width:620px;margin:0 auto">' +
+    '<button class="kk-back" data-act="checkin-cancel">← Leave the check-in</button>' +
+    '<div class="kk-prog"><div class="kk-progtrack"><i style="width:' +
+      Math.round((i / steps.length) * 100) + '%"></i></div>' +
+      '<span class="kk-progstep">Question ' + (i + 1) + ' of ' + steps.length + '</span></div>' +
+    '<h1 class="kk-qtext">' + esc(q.q) + '</h1>' +
+    '<p class="kk-qhelp">' + esc(q.help) + '</p>' +
+    field +
+    '<div class="kk-ciact">' +
+      (i > 0 ? '<button class="kk-btn ghost" data-act="checkin-back">Back</button>' : '') +
+      '<span class="spacer"></span>' +
+      (q.skippable ? '<button class="kk-btn ghost" data-act="checkin-skip">I don’t know</button>' : '') +
+      '<button class="kk-btn" data-act="checkin-next"' + (answered ? '' : ' disabled') + '>' +
+        (last ? 'Review' : 'Next') + '</button>' +
+    '</div></div>';
+}
+
+/* What the answers will actually write. Shown before submit so the builder
+   can see exactly what is recorded and at what strength. */
+function ciPlan(){
+  const d = state.checkin.draft, pa = sel.participant(state.actingAs);
+  const p = sel.productsOf(pa.id)[0] || null;
+  const hasEvidence = d.evidence && d.evidence !== 'Nothing to attach';
+  const strength = hasEvidence ? 'EVIDENCE_SUBMITTED' : 'SELF_REPORTED';
+  const rows = [];
+
+  if(d._noProduct && d.hasProduct === 'Yes' && d.productName)
+    rows.push({k:'New product record', v:esc(d.productName), n:'Opened at "Built"'});
+  if(d.status){
+    const target = STATUS_FROM_LABEL[d.status];
+    const cur = p ? sel.currentStatus(p.id) : null;
+    const isOff = OFF_STATUS.includes(target);
+    const advances = p && STATUS_META[target].n !== null &&
+                     STATUS_META[target].n > sel.peakRank(p.id);
+    rows.push({k:'Product status', v:STATUS_META[target].label,
+      n:!p ? 'Recorded on the new product record'
+        : target === cur ? 'Unchanged — no new history entry'
+        : (isOff || advances) ? 'Added to the status history'
+        : 'Noted, but not written back — a self-report does not move a product down the ladder'});
+  }
+  const numRow = (label, key, type) => {
+    if(d[key] === undefined) return rows.push({k:label, v:'—', n:'Skipped — recorded as unknown, not zero'});
+    rows.push({k:label, v:(type === 'REVENUE' ? money(d[key]) : fmt(d[key])),
+      n:'Recorded as ' + VERIF[strength].label.toLowerCase() +
+        (d[key] === 0 ? ' · a measured zero, which is different from unknown' : '')});
+  };
+  if(d.status){ numRow('Total users','users','TOTAL_USERS'); numRow('Active in last 30 days','mau','MONTHLY_ACTIVE_USERS'); }
+  if(d.paid && d.paid !== 'No') numRow('Revenue','revenue','REVENUE');
+  else if(d.paid === 'No') rows.push({k:'Revenue', v:'None', n:'Recorded as a confirmed zero, not a gap'});
+
+  if(d.outcome === 'Yes')
+    rows.push({k:'Builder outcome', v:esc(d.outcomeType || 'Other outcome'),
+      n:'Recorded as self-reported, attribution "participant-reported association"'});
+  else if(d.outcome === 'No')
+    rows.push({k:'Builder outcome', v:'None reported',
+      n:'Recorded explicitly, so the absence is visible rather than missing'});
+
+  if(hasEvidence)
+    rows.push({k:'Evidence', v:esc(d.evidence),
+      n:d.evidence === 'Connect my analytics'
+        ? 'Logged as a connection request, held for clarification'
+        : 'Added to the verification queue for a reviewer'});
+  return rows;
+}
+
+function vCheckinReview(){
+  const rows = ciPlan();
+  return '<div style="max-width:620px;margin:0 auto">' +
+    '<button class="kk-back" data-act="checkin-back">← Back to the questions</button>' +
+    '<h1 class="kk-h1">Before you send it</h1>' +
+    '<p class="kk-lede">This is exactly what gets recorded, and how strongly each figure will be held. Nothing here becomes a fact until someone checks the evidence.</p>' +
+    '<div class="kk-panel"><ul class="kk-writes">' + rows.map(r =>
+      '<li><span class="wk">' + r.k + '</span><span class="wv">' + r.v + '</span>' +
+      '<span class="wn">' + r.n + '</span></li>').join('') + '</ul></div>' +
+    '<div class="kk-ciact"><span class="spacer"></span>' +
+      '<button class="kk-btn gold" data-act="checkin-submit">Send my check-in</button></div></div>';
+}
+
+function vCheckinDone(){
+  const pa = sel.participant(state.actingAs);
+  const written = state.checkin.written || [];
+  return '<div style="max-width:620px;margin:0 auto">' +
+    '<h1 class="kk-h1">Thank you</h1>' +
+    '<p class="kk-lede">Your check-in is recorded. Here is what changed in the platform because of it.</p>' +
+    '<div class="kk-panel"><ul class="kk-writes">' + written.map(w =>
+      '<li><span class="wk">' + w.k + '</span><span class="wv">' + w.v + '</span>' +
+      (w.n ? '<span class="wn">' + w.n + '</span>' : '') + '</li>').join('') + '</ul></div>' +
+    '<p class="kk-sub" style="margin-top:14px">Anything you skipped stays recorded as unknown. We would rather have a gap than a guess.</p>' +
+    '<div class="kk-ciact"><button class="kk-btn ghost" data-act="checkin-cancel">Back to my products</button></div></div>';
+}
+
+/* Writes the answers into the normalised entities. This is the platform's
+   only participant-facing write path. */
+function submitCheckin(){
+  const d = state.checkin.draft;
+  const pa = sel.participant(state.actingAs);
+  const ck = byId(DB.checkins, state.checkin.checkinId);
+  const hasEvidence = d.evidence && d.evidence !== 'Nothing to attach';
+  const strength = hasEvidence ? 'EVIDENCE_SUBMITTED' : 'SELF_REPORTED';
+  const written = [];
+  let p = sel.productsOf(pa.id)[0] || null;
+  let evId = null;
+
+  // a product record, if they built something we did not know about
+  if(!p && d.hasProduct === 'Yes' && d.productName){
+    p = {id:'pr' + (DB.products.length + 1) + 'n', participantId:pa.id,
+         cohortId:(sel.enrolmentOf(pa.id)||{}).cohortId, programmeId:'bnp',
+         name:d.productName, aka:null, category:'Other', domain:null, liveUrl:null,
+         dataMode:'demo', description:'Entered by the builder at a check-in.', problem:null};
+    DB.products.push(p);
+    DB.statusHistory.push({productId:p.id, status:'BUILT', effectiveDate:TODAY, source:'IMPACT_CHECKIN'});
+    written.push({k:'New product record', v:esc(p.name), n:'Opened at "Built"'});
+  }
+
+  // evidence first, so metrics can cite it
+  if(hasEvidence && p){
+    evId = 'ev' + (DB.evidence.length + 1) + 'n';
+    const connect = d.evidence === 'Connect my analytics';
+    DB.evidence.push({id:evId, participantId:pa.id, productId:p.id,
+      type:connect ? 'ANALYTICS_CONNECTION' : d.evidence === 'Payment provider export' ? 'PAYMENT_PROVIDER'
+           : d.evidence === 'A customer we can contact' ? 'CUSTOMER_TESTIMONIAL' : 'ANALYTICS_SCREENSHOT',
+      title:d.evidence, description:'Offered by the builder at the ' +
+        ck.type.replace('_',' ').toLowerCase() + ' check-in.',
+      submittedAt:TODAY, verification:connect ? 'NEEDS_CLARIFICATION' : 'EVIDENCE_SUBMITTED',
+      verifiedAt:null, reviewNote:connect ? 'Connection requested; not yet established.' : null});
+    written.push({k:'Evidence', v:esc(d.evidence),
+      n:connect ? 'Held pending connection' : 'Queued for a reviewer'});
+  }
+
+  if(p){
+    // status — an explicit stop is always written; a self-report never demotes
+    const target = STATUS_FROM_LABEL[d.status];
+    if(target){
+      const cur = sel.currentStatus(p.id);
+      const isOff = OFF_STATUS.includes(target);
+      const advances = STATUS_META[target].n !== null && STATUS_META[target].n > sel.peakRank(p.id);
+      if(target !== cur && (isOff || advances)){
+        DB.statusHistory.push({productId:p.id, status:target, effectiveDate:TODAY,
+          source:'IMPACT_CHECKIN', evidenceId:evId,
+          notes:'Reported by the builder as "' + d.status + '".'});
+        written.push({k:'Product status', v:STATUS_META[target].label, n:'Added to the status history'});
+      } else {
+        written.push({k:'Product status', v:STATUS_META[target].label, n:'No change to the record'});
+      }
+    }
+    // metrics — a skipped answer writes nothing at all
+    const push = (type, value, label) => {
+      if(value === undefined || value === null) {
+        written.push({k:label, v:'—', n:'Left unknown'});
+        return;
+      }
+      DB.metrics.push(met(p.id, type, value, TODAY, 'IMPACT_CHECKIN', strength, evId));
+      written.push({k:label, v:type === 'REVENUE' ? money(value) : fmt(value),
+        n:'Recorded as ' + VERIF[strength].label.toLowerCase()});
+    };
+    push('TOTAL_USERS', d.users, 'Total users');
+    push('MONTHLY_ACTIVE_USERS', d.mau, 'Active in last 30 days');
+    if(d.paid && d.paid !== 'No') push('REVENUE', d.revenue, 'Revenue');
+    else if(d.paid === 'No'){
+      DB.metrics.push(met(p.id, 'REVENUE', 0, TODAY, 'IMPACT_CHECKIN', 'SELF_REPORTED', null));
+      written.push({k:'Revenue', v:'$0', n:'A confirmed zero, not a gap'});
+    }
+  }
+
+  // builder outcome, recorded either way
+  if(d.outcome === 'Yes'){
+    DB.outcomes.push({id:'o' + (DB.outcomes.length + 1) + 'n', participantId:pa.id,
+      type:OUTCOME_FROM_LABEL[d.outcomeType] || 'OTHER', date:TODAY,
+      description:d.outcomeHow || d.outcomeType || 'Reported at a check-in.',
+      financialValue:null, currency:null, attribution:'ASSOCIATED',
+      verification:'SELF_REPORTED', evidenceId:null});
+    written.push({k:'Builder outcome', v:esc(d.outcomeType || 'Other outcome'), n:'Recorded as self-reported'});
+  } else if(d.outcome === 'No'){
+    DB.outcomes.push({id:'o' + (DB.outcomes.length + 1) + 'n', participantId:pa.id,
+      type:'NO_OUTCOME', date:TODAY, description:'Reported no change to work or income at the ' +
+        ck.type.replace('_',' ').toLowerCase() + ' check-in.',
+      financialValue:null, currency:null, attribution:'UNKNOWN',
+      verification:'SELF_REPORTED', evidenceId:null});
+    written.push({k:'Builder outcome', v:'None reported', n:'Recorded so the absence is visible'});
+  }
+
+  // close the window
+  ck.status = 'COMPLETED';
+  ck.completedDate = TODAY;
+  ck.responses = Object.assign({}, d);
+  if(!ck.productId && p) ck.productId = p.id;
+  written.push({k:'Check-in', v:ck.type.replace('_',' ').toLowerCase(), n:'Marked complete on ' + dt(TODAY)});
+
+  state.checkin = {open:true, step:0, draft:{}, done:true, written};
+  toast('Check-in received. Thank you.');
+  render();
+}
+
 function vBuilderHome(){
+  // the wizard takes over the whole builder surface while it is open
+  if(state.checkin.done) return vCheckinDone();
+  if(state.checkin.open){
+    return state.checkin.step >= ciSteps().length ? vCheckinReview() : vCheckinForm();
+  }
   const pa = sel.participant(state.actingAs);
   const ps = sel.productsOf(pa.id);
   const open = sel.openCheckin(pa.id);
+  const done = sel.checkinsOf(pa.id).filter(c => c.status === 'COMPLETED');
   const peers = DB.enrolments.filter(e => e.cohortId === (sel.enrolmentOf(pa.id) || {}).cohortId)
                   .map(e => sel.participant(e.participantId));
   return '<div style="max-width:660px;margin:0 auto">' +
@@ -2695,9 +3019,18 @@ function vBuilderHome(){
       : emptyState('Nothing on record yet','Your check-in will open the first record for you.')) +
     (open
       ? '<div class="kk-panel"><h2 class="kk-h2">Your ' + esc(open.type.replace('_',' ').toLowerCase()) + ' check-in</h2>' +
-        '<p class="kk-sub">It was due on ' + dt(open.dueDate) + '. Seven questions, and you can skip anything you do not know.</p>' +
-        '<button class="kk-btn gold" data-act="toast" data-arg="The check-in form is demonstrated in the internal view of this prototype.">Start the check-in</button></div>'
-      : '<div class="kk-panel"><h2 class="kk-h2">Nothing due</h2><p class="kk-sub">Your next window has not opened yet.</p></div>') +
+        '<p class="kk-sub">It was due on ' + dt(open.dueDate) + '. A handful of questions, about two minutes, ' +
+        'and you can skip anything you do not know.</p>' +
+        '<button class="kk-btn gold" data-act="checkin-start" data-arg="' + open.id + '">Start the check-in</button></div>'
+      : '<div class="kk-panel"><h2 class="kk-h2">Nothing due right now</h2>' +
+        '<p class="kk-sub">' + (done.length
+          ? 'Your last one came in on ' + dt(done[done.length - 1].completedDate) + '. We will email you when the next window opens.'
+          : 'Your first window opens 30 days after Demo Day.') + '</p></div>') +
+    (done.length ? '<div class="kk-panel" style="margin-top:12px"><h2 class="kk-h2">What you have told us</h2>' +
+      timelineHTML(done.map(c => ({d:c.completedDate,
+        t:'Returned the ' + c.type.replace('_',' ').toLowerCase() + ' check-in',
+        s:c.responses ? 'Status reported as \u201c' + (c.responses.status || '\u2014') + '\u201d' : 'Impact check-in'}))) +
+      '</div>' : '') +
     '</div>';
 }
 
@@ -2782,6 +3115,37 @@ document.addEventListener('click', e => {
     state.filters = {programme:'all', cohort:'all', period:'all', verification:'all', domain:'all', status:'all'};
     render();
   }
+  else if(act === 'checkin-start'){
+    const pa = sel.participant(state.actingAs);
+    state.checkin = {open:true, step:0, checkinId:arg, done:false,
+                     draft:{_noProduct: sel.productsOf(pa.id).length === 0}};
+    render();
+  }
+  else if(act === 'ci-pick'){
+    const i = arg.indexOf('::');
+    state.checkin.draft[arg.slice(0, i)] = arg.slice(i + 2);
+    render();
+  }
+  else if(act === 'checkin-next'){
+    ciCapture();
+    state.checkin.step++;
+    render();
+  }
+  else if(act === 'checkin-skip'){
+    const q = ciSteps()[state.checkin.step];
+    if(q) delete state.checkin.draft[q.k];
+    state.checkin.step++;
+    render();
+  }
+  else if(act === 'checkin-back'){
+    ciCapture();
+    const steps = ciSteps();
+    state.checkin.step = state.checkin.step >= steps.length
+      ? steps.length - 1 : Math.max(0, state.checkin.step - 1);
+    render();
+  }
+  else if(act === 'checkin-cancel'){ state.checkin = {open:false, step:0, draft:{}}; render(); }
+  else if(act === 'checkin-submit') submitCheckin();
   else if(act === 'timeline'){
     const pa = sel.participant(arg), tl = builderTimeline(arg);
     openDrawer('Timeline', esc(participantName(pa)) + ' \u00b7 ' + tl.length + ' events, oldest first',

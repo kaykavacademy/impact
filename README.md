@@ -27,7 +27,7 @@ Four modes, switched from the header:
 | **Internal Observatory** | KayKav staff. Full operational tooling. |
 | **Funder View** | External read-only. Same data, impact-first, no operational tooling. |
 | **Public** | Curated, privacy-safe. |
-| **Builder** | What a participant sees when a check-in is due. |
+| **Builder** | What a participant sees when a check-in is due — a working questionnaire that writes back into the data. |
 
 Screens: Overview · Outcomes · Impact Stories · Builders · Products · Cohorts ·
 Check-ins · Evidence · Data Quality · Reports, plus builder, product, cohort and
@@ -43,6 +43,12 @@ Headline number → Cohort → Builder → Product → Metric → Evidence
 
 Click any snapshot card or funnel stage and you should land on the filtered
 records, not a dead end.
+
+The other thing worth exercising is the **check-in** in Builder mode. It is the
+only participant-facing write path: the answers create metric, status history,
+evidence and outcome records, and a review step shows exactly what will be
+written and at what verification strength before anything is saved. Skipping a
+question writes nothing at all — it does not write a zero.
 
 ## Which figures are real
 

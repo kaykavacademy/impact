@@ -12,7 +12,7 @@ demo exists to find these before engineers build the real system.
 | G3 | **Revenue has no currency handling.** Amounts are stored as USD numbers. The source cites ₦ and £ figures. | Mixed-currency totals are currently impossible to compute honestly. |
 | G4 | **Attribution exists on builder outcomes but not on product revenue.** | A builder's product might earn money only partly because of KayKav; there is nowhere to say so. |
 | G5 | **No consent enforcement.** `stories.consent` exists but nothing checks it before rendering a name. | Publishing a participant's name needs a hard gate, not a field. |
-| G6 | **Check-in responses are not stored.** Status is recorded; the actual answers are not. | The check-in detail view reconstructs from metrics, which is lossy. |
+| ~~G6~~ | ~~Check-in responses are not stored.~~ **Closed.** The check-in flow now writes `responses` onto the check-in record, and creates the metric, status, evidence and outcome rows the answers imply. | — |
 | G7 | **No `period_start` on metrics.** Only `period_end` is populated. | "MAU for August" and "MAU as of August" are different claims. |
 | G8 | **Products cannot be linked.** A pivot creates a new product with no pointer to its predecessor. | Ideas Journal pivoted, but the successor is invisible. |
 
@@ -48,6 +48,15 @@ demo exists to find these before engineers build the real system.
 | E3 | **A rejected claim has no resolution path.** Rejecting drops it to self-reported and nothing schedules a follow-up. |
 | E4 | **No evidence for absence.** "This builder reported no outcome" is recorded, but there is no way to evidence that it was genuinely asked and answered. |
 | E5 | **Connected data is simulated.** Nothing actually syncs; `CONNECTED_DATA` is a label. |
+
+### New gaps the check-in flow exposed
+
+| # | Gap | Why it matters |
+|---|---|---|
+| G9 | **A self-report cannot demote a product, by design.** Reporting "still building" on an Active product is noted but not written, because a form answer should not silently walk a product back down the ladder. Explicit stops (paused, pivoted, shut down) *are* written. This asymmetry is defensible but unratified. | A genuine regression reported by a builder is currently invisible until a reviewer acts. |
+| G10 | **"Actively growing" maps to Active, not Traction.** Traction needs sustained evidence (Framework §6), which one form answer cannot establish. | Products may sit at Active when they deserve Traction, until someone reviews. |
+| G11 | **Re-submission is not modelled.** A completed window cannot be reopened or corrected. | Data Model §46 wants an audit trail of corrections. |
+| G12 | **Evidence is claimed, not uploaded.** The builder picks a type; no file is attached. | Real capture needs storage and a virus/size policy. |
 
 ## 5. Engineering questions
 
